@@ -35,6 +35,12 @@ Flowstate is the **priority project** in this workspace. It is a native Meta Que
 - `docs/ASSET-AND-LICENSE-REGISTER.md` — asset sources, license obligations.
 - `docs/PIPELINE-STATUS.md` — current stage in the VR product pipeline, gate decisions, and open risks.
 
+## Repository
+
+https://github.com/Sirrine-Jonathan/flowstate
+
+Default branch: `main`. Follow the workspace [WORKFLOW.md](../WORKFLOW.md) for branch naming, PR conventions, and handoff.
+
 ## GitHub Project
 
 Not yet created. Create under `Sirrine-Jonathan` when Stage 2 validation is underway. Link here once created.

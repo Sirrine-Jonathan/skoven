@@ -52,3 +52,9 @@ Engine: Unity 6 LTS · Meta XR SDK (All-in-One) · OpenXR
 2. Decide on host integration model (companion app vs. cloud dev environment)
 3. Build Stage 4 prototype: voice → agent → code diff displayed in VR
 4. Create Meta developer app identity and GitHub Project once build path is confirmed
+
+---
+
+## Repository
+
+https://github.com/Sirrine-Jonathan/flowstate
