@@ -1,0 +1,33 @@
+{
+  "name": "flowstate-companion",
+  "version": "0.1.0",
+  "description": "Flowstate companion app — host-side agent orchestrator and WebSocket bridge for the Meta Quest VR app",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node --esm src/index.ts",
+    "dev:watch": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.27.3",
+    "dotenv": "16.4.5",
+    "form-data": "4.0.6",
+    "node-fetch": "3.3.2",
+    "openai": "4.52.7",
+    "simple-git": "4.0.2",
+    "ws": "8.22.1",
+    "yaml": "2.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "20.14.10",
+    "@types/ws": "8.5.11",
+    "ts-node": "10.9.2",
+    "ts-node-dev": "2.0.0",
+    "typescript": "5.5.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

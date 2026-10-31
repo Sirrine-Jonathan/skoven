@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "com.unity.textmeshpro": "3.0.9",
+    "com.unity.xr.management": "4.4.1",
+    "com.unity.xr.openxr": "1.12.1",
+    "com.unity.render-pipelines.universal": "17.0.3",
+    "com.unity.nuget.newtonsoft-json": "3.2.1",
+    "com.meta.xr.sdk.all": "71.0.0"
+  },
+  "scopedRegistries": [
+    {
+      "name": "Meta XR",
+      "url": "https://npm.packages.oculus.com",
+      "scopes": [
+        "com.meta.xr"
+      ]
+    }
+  ]
+}

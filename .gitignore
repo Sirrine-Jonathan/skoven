@@ -1,0 +1,28 @@
+# Companion app
+companion/.env
+companion/node_modules/
+companion/dist/
+
+# Unity
+unity/Library/
+unity/Temp/
+unity/Logs/
+unity/UserSettings/
+unity/obj/
+unity/Build/
+unity/Builds/
+unity/.vsconfig
+unity/*.csproj
+unity/*.sln
+unity/*.unityproj
+unity/[Aa]ssets/[Aa]ssets/
+unity/[Ll]ocal[Ss]ettings/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Editor
+.vscode/
+.idea/
+*.swp
