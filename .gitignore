@@ -4,25 +4,28 @@ companion/node_modules/
 companion/dist/
 
 # Unity
-unity/Library/
-unity/Temp/
-unity/Logs/
-unity/UserSettings/
-unity/obj/
-unity/Build/
-unity/Builds/
+unity/[Ll]ibrary/
+unity/[Tt]emp/
+unity/[Oo]bj/
+unity/[Bb]uild/
+unity/[Bb]uilds/
+unity/[Ll]ogs/
+unity/[Uu]ser[Ss]ettings/
+unity/[Ll]ocal[Ss]ettings/
+unity/.utmp/
 unity/.vsconfig
 unity/*.csproj
 unity/*.sln
+unity/*.slnx
 unity/*.unityproj
 unity/[Aa]ssets/[Aa]ssets/
-unity/[Ll]ocal[Ss]ettings/
 
-# macOS
+# Project Builds & logs
+Builds/*.apk
+Builds/*.aab
+*.log
+*.swp
 .DS_Store
 **/.DS_Store
-
-# Editor
 .vscode/
 .idea/
-*.swp
