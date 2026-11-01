@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using Flowstate.Network;
+using Skoven.Network;
 
-namespace Flowstate.UI.Panels
+namespace Skoven.UI.Panels
 {
     /// <summary>
     /// Chat / AI panel — shows conversation history, transcript acknowledgements,
@@ -53,7 +53,7 @@ namespace Flowstate.UI.Panels
             }
             else
             {
-                AddLine($"<color={systemColor}>No project connected. Set FLOWSTATE_DEFAULT_PROJECT in companion .env</color>");
+                AddLine($"<color={systemColor}>No project connected. Set SKOVEN_DEFAULT_PROJECT in companion .env</color>");
             }
         }
 

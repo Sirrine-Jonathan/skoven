@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Flowstate.UI.Panels;
+using Skoven.UI.Panels;
 
-namespace Flowstate.UI
+namespace Skoven.UI
 {
     /// <summary>
     /// Manages show/hide and layout reset for all floating panels.
@@ -38,7 +38,7 @@ namespace Flowstate.UI
             if (_panels.TryGetValue(panelName, out var panel))
                 panel?.Show();
             else
-                Debug.LogWarning($"[Flowstate] Unknown panel: {panelName}");
+                Debug.LogWarning($"[Skoven] Unknown panel: {panelName}");
         }
 
         public void HidePanel(string panelName)

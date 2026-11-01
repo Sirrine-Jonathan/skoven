@@ -1,11 +1,11 @@
-# Flowstate — Asset and License Register
+# Skoven — Asset and License Register
 
 _Last updated: 2026-10-31_
 _Status: Pre-production — no assets selected or imported yet_
 
 All assets used in a Store release must have an entry here with confirmed license status. Do not import or ship an asset without recording its provenance.
 
-Flowstate is a productivity tool with minimal art requirements. The asset surface is intentionally small: a few static environments, UI chrome, and fonts. Prioritize clean licensing over visual complexity.
+Skoven is a productivity tool with minimal art requirements. The asset surface is intentionally small: a few static environments, UI chrome, and fonts. Prioritize clean licensing over visual complexity.
 
 ---
 
@@ -28,7 +28,7 @@ OFL 1.1 permits use in commercial applications including embedded/bundled use. N
 
 ## Environment asset candidates
 
-Flowstate needs 3 minimal static environments (Void, Studio, Exterior). These are background rooms, not game-quality scenes.
+Skoven needs 3 minimal static environments (Void, Studio, Exterior). These are background rooms, not game-quality scenes.
 
 | Source | Type | License | Notes |
 |---|---|---|---|

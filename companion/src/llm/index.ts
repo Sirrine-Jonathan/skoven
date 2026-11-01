@@ -62,7 +62,7 @@ export interface ParsedIntent {
 
 // ── System prompt ─────────────────────────────────────────────────────────────
 
-const INTENT_SYSTEM_PROMPT = `You are the Flowstate AI assistant — a voice-driven coding companion inside a VR workspace.
+const INTENT_SYSTEM_PROMPT = `You are the Skoven AI assistant — a voice-driven coding companion inside a VR workspace.
 
 Parse the developer's spoken command and return a structured JSON intent.
 
@@ -108,10 +108,10 @@ export class LLMClient {
   private anthropicClient: Anthropic | null = null;
 
   constructor() {
-    this.providerId = (process.env["FLOWSTATE_LLM_PROVIDER"] ??
+    this.providerId = (process.env["SKOVEN_LLM_PROVIDER"] ??
       "openai") as ProviderID;
     this.model =
-      process.env["FLOWSTATE_LLM_MODEL"] ??
+      process.env["SKOVEN_LLM_MODEL"] ??
       resolveProviderConfig(this.providerId).defaultModel;
 
     this.initClient();
@@ -132,8 +132,8 @@ export class LLMClient {
       // OpenRouter requires these headers for usage tracking / rate limits
       if (this.providerId === "openrouter") {
         clientOptions.defaultHeaders = {
-          "HTTP-Referer": "https://github.com/Sirrine-Jonathan/flowstate",
-          "X-Title": "Flowstate VR Coding Companion",
+          "HTTP-Referer": "https://github.com/Sirrine-Jonathan/skoven",
+          "X-Title": "Skoven VR Agent Workspace",
         };
       }
 

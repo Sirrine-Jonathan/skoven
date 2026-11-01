@@ -79,9 +79,9 @@ export const PROVIDERS: Record<ProviderID, ProviderConfig> = {
   custom: {
     id: "custom",
     displayName: "Custom endpoint",
-    // baseUrl must be provided via FLOWSTATE_CUSTOM_LLM_BASE_URL
+    // baseUrl must be provided via SKOVEN_CUSTOM_LLM_BASE_URL
     baseUrl: "",
-    apiKeyEnvVar: "FLOWSTATE_CUSTOM_LLM_API_KEY",
+    apiKeyEnvVar: "SKOVEN_CUSTOM_LLM_API_KEY",
     defaultModel: "default",
     supportsStreaming: true,
     openAICompatible: true,
@@ -102,9 +102,9 @@ export function resolveProviderConfig(id: ProviderID): ProviderConfig {
   }
 
   if (id === "custom") {
-    base.baseUrl = process.env["FLOWSTATE_CUSTOM_LLM_BASE_URL"] ?? "";
+    base.baseUrl = process.env["SKOVEN_CUSTOM_LLM_BASE_URL"] ?? "";
     base.defaultModel =
-      process.env["FLOWSTATE_CUSTOM_LLM_MODEL"] ?? base.defaultModel;
+      process.env["SKOVEN_CUSTOM_LLM_MODEL"] ?? base.defaultModel;
   }
 
   return base;

@@ -1,7 +1,7 @@
 /**
  * WebSocket server — Quest ↔ Companion bridge
  *
- * Listens on FLOWSTATE_PORT (default 8765).
+ * Listens on SKOVEN_PORT (default 8765).
  * Each Quest connection gets its own session: a project context, a
  * conversation history, and an AgentOrchestrator instance.
  */
@@ -31,8 +31,8 @@ interface Session {
 // ── Server ─────────────────────────────────────────────────────────────────
 
 export function startServer(): void {
-  const port = parseInt(process.env["FLOWSTATE_PORT"] ?? "8765", 10);
-  const allowedDevices = (process.env["FLOWSTATE_ALLOWED_DEVICES"] ?? "")
+  const port = parseInt(process.env["SKOVEN_PORT"] ?? "8765", 10);
+  const allowedDevices = (process.env["SKOVEN_ALLOWED_DEVICES"] ?? "")
     .split(",")
     .map((d) => d.trim())
     .filter(Boolean);
@@ -43,20 +43,20 @@ export function startServer(): void {
   const providerInfo = llm.getProviderInfo();
   const config = resolveProviderConfig(providerInfo.provider as ProviderID);
   console.log(
-    `[Flowstate] LLM provider: ${config.displayName} / model: ${providerInfo.model}`
+    `[Skoven] LLM provider: ${config.displayName} / model: ${providerInfo.model}`
   );
 
   const wss = new WebSocketServer({ port });
 
-  console.log(`[Flowstate] Companion app listening on ws://localhost:${port}`);
+  console.log(`[Skoven] Companion app listening on ws://localhost:${port}`);
   console.log(
-    `[Flowstate] Connect your Quest to the same Wi-Fi network and use this machine's IP address.`
+    `[Skoven] Connect your Quest to the same Wi-Fi network and use this machine's IP address.`
   );
   if (allowedDevices.length > 0) {
-    console.log(`[Flowstate] Allowed device IDs: ${allowedDevices.join(", ")}`);
+    console.log(`[Skoven] Allowed device IDs: ${allowedDevices.join(", ")}`);
   } else {
     console.log(
-      `[Flowstate] No device allowlist configured — accepting any device (dev mode).`
+      `[Skoven] No device allowlist configured — accepting any device (dev mode).`
     );
   }
 
@@ -81,7 +81,7 @@ export function startServer(): void {
       try {
         msg = JSON.parse(raw.toString()) as QuestMessage;
       } catch {
-        console.warn("[Flowstate] Received non-JSON message — ignoring.");
+        console.warn("[Skoven] Received non-JSON message — ignoring.");
         return;
       }
 
@@ -89,7 +89,7 @@ export function startServer(): void {
         await handleMessage(msg, session, send, stt, llm, allowedDevices);
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        console.error(`[Flowstate] Error handling message type=${msg.type}:`, message);
+        console.error(`[Skoven] Error handling message type=${msg.type}:`, message);
         send({
           type: "agent_error",
           stage: "understand",
@@ -102,17 +102,17 @@ export function startServer(): void {
 
     ws.on("close", () => {
       if (session.deviceId) {
-        console.log(`[Flowstate] Quest disconnected: ${session.deviceId}`);
+        console.log(`[Skoven] Quest disconnected: ${session.deviceId}`);
       }
     });
 
     ws.on("error", (err) => {
-      console.error("[Flowstate] WebSocket error:", err.message);
+      console.error("[Skoven] WebSocket error:", err.message);
     });
   });
 
   wss.on("error", (err) => {
-    console.error("[Flowstate] Server error:", err.message);
+    console.error("[Skoven] Server error:", err.message);
   });
 }
 
@@ -134,23 +134,23 @@ async function handleMessage(
       !allowedDevices.includes(msg.deviceId)
     ) {
       console.warn(
-        `[Flowstate] Rejected connection from unknown device: ${msg.deviceId}`
+        `[Skoven] Rejected connection from unknown device: ${msg.deviceId}`
       );
       send({
         type: "agent_error",
         stage: "understand",
         message: `Device not authorized: ${msg.deviceId}`,
-        suggestion: "Add this device ID to FLOWSTATE_ALLOWED_DEVICES in .env",
+        suggestion: "Add this device ID to SKOVEN_ALLOWED_DEVICES in .env",
       });
       return;
     }
 
     session.deviceId = msg.deviceId;
-    console.log(`[Flowstate] Quest connected: ${msg.deviceId}`);
+    console.log(`[Skoven] Quest connected: ${msg.deviceId}`);
 
     const projectPath =
       msg.projectPath ??
-      process.env["FLOWSTATE_DEFAULT_PROJECT"];
+      process.env["SKOVEN_DEFAULT_PROJECT"];
 
     if (!projectPath) {
       send({
@@ -163,7 +163,7 @@ async function handleMessage(
       });
       send({
         type: "speech",
-        text: "Connected. No project path configured. Set FLOWSTATE_DEFAULT_PROJECT in your .env file, or open a project from the Quest.",
+        text: "Connected. No project path configured. Set SKOVEN_DEFAULT_PROJECT in your .env file, or open a project from the Quest.",
         priority: "normal",
       });
       return;
@@ -255,7 +255,7 @@ async function handleMessage(
       } catch (err) {
         const error = err instanceof Error ? err.message : String(err);
         send({ type: "speech", text: "I couldn't transcribe that. Try again.", priority: "high" });
-        console.error("[Flowstate] STT error:", error);
+        console.error("[Skoven] STT error:", error);
         return;
       }
 
@@ -354,7 +354,7 @@ function handleCommand(
     default:
       // Panel show/hide, environment changes, etc. are handled entirely
       // on the Quest side — companion just acknowledges.
-      console.log(`[Flowstate] Workspace command: ${action}`, payload);
+      console.log(`[Skoven] Workspace command: ${action}`, payload);
       break;
   }
 }

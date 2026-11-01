@@ -1,8 +1,8 @@
 using UnityEngine;
-using Flowstate.Network;
-using Flowstate.Settings;
+using Skoven.Network;
+using Skoven.Settings;
 
-namespace Flowstate.Agent
+namespace Skoven.Agent
 {
     /// <summary>
     /// Main bootstrap — sends the handshake after the WebSocket connects
@@ -11,7 +11,7 @@ namespace Flowstate.Agent
     /// Attach to a root GameObject in the main scene alongside
     /// WebSocketClient, MessageRouter, VoiceCapture, and VoiceInputController.
     /// </summary>
-    public class FlowstateBootstrap : MonoBehaviour
+    public class SkovenBootstrap : MonoBehaviour
     {
         [Header("Dependencies")]
         public WebSocketClient wsClient;
@@ -56,7 +56,7 @@ namespace Flowstate.Agent
                 : $"{{\"type\":\"handshake\",\"deviceId\":\"{settings.DeviceId}\"}}";
 
             wsClient.Send(handshake);
-            Debug.Log("[Flowstate] Handshake sent.");
+            Debug.Log("[Skoven] Handshake sent.");
         }
 
         private void UpdateVoiceIndicator()

@@ -38,7 +38,7 @@ export async function runVerify(
   repoPath: string
 ): Promise<StageResult> {
   const allowedCommands = (
-    process.env["FLOWSTATE_ALLOWED_COMMANDS"] ?? ""
+    process.env["SKOVEN_ALLOWED_COMMANDS"] ?? ""
   )
     .split(",")
     .map((c) => c.trim())

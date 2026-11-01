@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.XR;
 
-namespace Flowstate.UI
+namespace Skoven.UI
 {
     /// <summary>
     /// Hand menu — a radial panel attached to the non-dominant (left) hand.

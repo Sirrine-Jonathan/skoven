@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Flowstate.Network
+namespace Skoven.Network
 {
     /// <summary>
     /// Manages the WebSocket connection to the companion app.
@@ -73,9 +73,9 @@ namespace Flowstate.Network
                 try
                 {
                     var uri = new Uri($"ws://{hostAddress}:{port}");
-                    Debug.Log($"[Flowstate] Connecting to {uri}...");
+                    Debug.Log($"[Skoven] Connecting to {uri}...");
                     await _ws.ConnectAsync(uri, _cts.Token);
-                    Debug.Log("[Flowstate] Connected to companion app.");
+                    Debug.Log("[Skoven] Connected to companion app.");
                     _reconnecting = false;
                     _incomingQueue.Enqueue("{\"_meta\":\"connected\"}");
                     OnConnected?.Invoke();
@@ -86,7 +86,7 @@ namespace Flowstate.Network
                     await Task.WhenAny(recvTask, sendTask);
 
                     OnDisconnected?.Invoke();
-                    Debug.Log("[Flowstate] Disconnected from companion app.");
+                    Debug.Log("[Skoven] Disconnected from companion app.");
                 }
                 catch (OperationCanceledException)
                 {
@@ -94,7 +94,7 @@ namespace Flowstate.Network
                 }
                 catch (Exception ex)
                 {
-                    Debug.LogWarning($"[Flowstate] Connection failed: {ex.Message}. Retrying in {reconnectDelaySec}s...");
+                    Debug.LogWarning($"[Skoven] Connection failed: {ex.Message}. Retrying in {reconnectDelaySec}s...");
                 }
 
                 _reconnecting = true;

@@ -1,9 +1,9 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Flowstate.Network;
+using Skoven.Network;
 
-namespace Flowstate.UI.Panels
+namespace Skoven.UI.Panels
 {
     /// <summary>
     /// Task Board panel — shows the current task, pipeline stage progress

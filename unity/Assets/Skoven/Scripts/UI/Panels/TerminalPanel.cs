@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Flowstate.Network;
+using Skoven.Network;
 
-namespace Flowstate.UI.Panels
+namespace Skoven.UI.Panels
 {
     /// <summary>
     /// Terminal panel — shows stdout/stderr from test runs, build output,

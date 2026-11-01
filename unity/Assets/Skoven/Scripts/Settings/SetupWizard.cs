@@ -1,10 +1,10 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using Flowstate.Network;
-using Flowstate.Settings;
+using Skoven.Network;
+using Skoven.Settings;
 
-namespace Flowstate.Settings
+namespace Skoven.Settings
 {
     /// <summary>
     /// One-time setup wizard shown on first launch.

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Flowstate.Network;
+using Skoven.Network;
 
-namespace Flowstate.Agent
+namespace Skoven.Agent
 {
     /// <summary>
     /// Text-to-speech player — converts AI speech messages to audio.

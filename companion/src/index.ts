@@ -1,5 +1,5 @@
 /**
- * Flowstate Companion App — entry point
+ * Skoven Companion App — entry point
  *
  * Usage:
  *   cp .env.example .env
@@ -18,8 +18,8 @@ dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 import { startServer } from "./server/index.js";
 
 console.log("╔═══════════════════════════════════════════╗");
-console.log("║        Flowstate Companion App            ║");
-console.log("║  Voice-driven AI coding — Meta Quest      ║");
+console.log("║        Skoven Companion App            ║");
+console.log("║  Voice-driven AI agent workspace      ║");
 console.log("╚═══════════════════════════════════════════╝");
 console.log();
 

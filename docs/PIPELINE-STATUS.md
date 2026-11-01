@@ -1,9 +1,9 @@
-# Flowstate — Pipeline Status
+# Skoven — Pipeline Status
 
 _Last updated: 2026-10-31_
 _Priority project in the VR Games Factory workspace._
 
-This file tracks Flowstate's position in the [VR Product Pipeline](../../docs/VR-PRODUCT-PIPELINE.md), records gate decisions, and surfaces open risks. Update after every stage gate decision.
+This file tracks Skoven's position in the [VR Product Pipeline](../../docs/VR-PRODUCT-PIPELINE.md), records gate decisions, and surfaces open risks. Update after every stage gate decision.
 
 ---
 
@@ -71,7 +71,7 @@ Remaining Stage 3 work:
 - [ ] Confirm LLM provider strategy and record in TECHNICAL-DESIGN.md
 - [ ] Confirm agent framework choice and record in TECHNICAL-DESIGN.md
 - [ ] Add pricing hypothesis once Meta Store category and comparables are confirmed
-- [ ] Name decision: confirm "Flowstate" is clear of trademarks and available as a Meta app identifier
+- [ ] Name decision: confirm "Skoven" is clear of trademarks and available as a Meta app identifier
 
 **Gate decision: Pending Stage 2 evidence**
 
@@ -138,4 +138,4 @@ Required before Stage 6:
 | Meta Store rejects developer tools category | Medium | Review VRC and category policies in Stage 2 before building | Pending Stage 2 |
 | Companion app complexity underestimated | Medium | Scope companion app as a thin WebSocket bridge first; add features incrementally | Pending Stage 4 |
 | Agent produces incorrect or destructive code | Medium | Approval gates before every commit/push; undo always available | Design decision — ongoing |
-| "Flowstate" name conflicts | Low | Trademark search in Stage 2 | Pending Stage 2 |
+| "Skoven" name conflicts | Low | Trademark search in Stage 2 | Pending Stage 2 |

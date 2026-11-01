@@ -1,7 +1,7 @@
 using UnityEngine;
-using Flowstate.UI.Panels;
+using Skoven.UI.Panels;
 
-namespace Flowstate.Settings
+namespace Skoven.Settings
 {
     /// <summary>
     /// Persists and applies workspace-level settings:

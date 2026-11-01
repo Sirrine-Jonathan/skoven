@@ -1,7 +1,7 @@
 {
-  "name": "flowstate-companion",
+  "name": "skoven-companion",
   "version": "0.1.0",
-  "description": "Flowstate companion app — host-side agent orchestrator and WebSocket bridge for the Meta Quest VR app",
+  "description": "Skoven companion app — host-side agent orchestrator and WebSocket bridge for the Meta Quest VR app",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

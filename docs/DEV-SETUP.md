@@ -1,4 +1,4 @@
-# Flowstate — Developer Setup
+# Skoven — Developer Setup
 
 How to get the companion app running and the Unity project open. Follow this before building or testing anything.
 
@@ -26,14 +26,14 @@ The companion app runs on your development machine and bridges the Quest to the 
 ### 1. Configure environment
 
 ```bash
-cd flowstate/companion
+cd skoven/companion
 cp .env.example .env
 ```
 
 Edit `.env`:
 - Set `OPENAI_API_KEY` (or your preferred provider key — see comments)
-- Set `FLOWSTATE_DEFAULT_PROJECT` to the absolute path of a git repo to work on
-- Leave `FLOWSTATE_PORT=8765` unless that port is in use
+- Set `SKOVEN_DEFAULT_PROJECT` to the absolute path of a git repo to work on
+- Leave `SKOVEN_PORT=8765` unless that port is in use
 
 ### 2. Install dependencies
 
@@ -50,13 +50,13 @@ npm run dev
 You should see:
 ```
 ╔═══════════════════════════════════════════╗
-║        Flowstate Companion App            ║
-║  Voice-driven AI coding — Meta Quest      ║
+║        Skoven Companion App            ║
+║  Voice-driven AI agent workspace      ║
 ╚═══════════════════════════════════════════╝
 
-[Flowstate] LLM provider: OpenAI / model: gpt-4o
-[Flowstate] Companion app listening on ws://localhost:8765
-[Flowstate] Connect your Quest to the same Wi-Fi network and use this machine's IP address.
+[Skoven] LLM provider: OpenAI / model: gpt-4o
+[Skoven] Companion app listening on ws://localhost:8765
+[Skoven] Connect your Quest to the same Wi-Fi network and use this machine's IP address.
 ```
 
 ### 4. Find your machine's local IP
@@ -82,7 +82,7 @@ npm start
 
 ## LLM provider configuration
 
-Edit `FLOWSTATE_LLM_PROVIDER` and the corresponding key in `.env`:
+Edit `SKOVEN_LLM_PROVIDER` and the corresponding key in `.env`:
 
 | Provider | Key variable | Example model |
 |---|---|---|
@@ -90,7 +90,7 @@ Edit `FLOWSTATE_LLM_PROVIDER` and the corresponding key in `.env`:
 | Anthropic | `ANTHROPIC_API_KEY` | `claude-3-5-sonnet-20241022` |
 | OpenRouter | `OPENROUTER_API_KEY` | `anthropic/claude-3.5-sonnet` |
 | Ollama (local) | _(none)_ | `llama3.1:8b` |
-| Custom endpoint | `FLOWSTATE_CUSTOM_LLM_API_KEY` | your model name |
+| Custom endpoint | `SKOVEN_CUSTOM_LLM_API_KEY` | your model name |
 
 OpenRouter gives access to 100+ models with a single API key — recommended if you want to switch models without reconfiguring. Get a key at https://openrouter.ai/keys.
 
@@ -100,7 +100,7 @@ brew install ollama        # macOS
 ollama pull llama3.1:8b   # or codellama:13b, deepseek-coder-v2, etc.
 ollama serve
 ```
-Then set `FLOWSTATE_LLM_PROVIDER=ollama` in `.env`.
+Then set `SKOVEN_LLM_PROVIDER=ollama` in `.env`.
 
 ---
 
@@ -110,7 +110,7 @@ Use the `passthrough` STT mode to send pre-transcribed text via a WebSocket clie
 
 ```bash
 # In .env:
-FLOWSTATE_STT_BACKEND=passthrough
+SKOVEN_STT_BACKEND=passthrough
 
 # In a separate terminal, connect with wscat:
 npx wscat -c ws://localhost:8765
@@ -128,7 +128,7 @@ npx wscat -c ws://localhost:8765
 
 ### 1. Open the project
 
-1. Open Unity Hub → Add → select `flowstate/unity/`
+1. Open Unity Hub → Add → select `skoven/unity/`
 2. Unity Hub will prompt to install Unity 6000.0.23f1 if not present — do so with Android Build Support + OpenXR
 3. Open the project — first import will take several minutes
 
@@ -149,11 +149,11 @@ Unity will auto-install packages from `Packages/manifest.json`. If Meta XR SDK f
 
 ### 4. Import fonts
 
-Follow `Assets/Flowstate/Scenes/SCENE-SETUP.md` → Font import section.
+Follow `Assets/Skoven/Scenes/SCENE-SETUP.md` → Font import section.
 
 ### 5. Create and configure the main scene
 
-Follow `Assets/Flowstate/Scenes/SCENE-SETUP.md` for the full hierarchy and MessageRouter wiring.
+Follow `Assets/Skoven/Scenes/SCENE-SETUP.md` for the full hierarchy and MessageRouter wiring.
 
 ### 6. Build and install on Quest
 
@@ -167,7 +167,7 @@ adb devices   # confirm device appears
 # Build in Unity:
 # File → Build Settings → Android → Build And Run
 # OR build to APK then:
-adb install -r path/to/Flowstate.apk
+adb install -r path/to/Skoven.apk
 ```
 
 ---
@@ -181,7 +181,7 @@ adb install -r path/to/Flowstate.apk
 
 **"No microphone devices found" on Quest:**
 - Ensure the Android Manifest includes `RECORD_AUDIO` permission (Meta XR SDK adds this automatically)
-- Confirm mic permission is granted: Quest Settings → Apps → Flowstate → Permissions
+- Confirm mic permission is granted: Quest Settings → Apps → Skoven → Permissions
 
 **STT returns empty string:**
 - Check `OPENAI_API_KEY` is valid and has Whisper API access

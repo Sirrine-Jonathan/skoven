@@ -1,5 +1,5 @@
 /**
- * Workflow configuration types — mirrors .flowstate/workflow.yml
+ * Workflow configuration types — mirrors .skoven/workflow.yml
  */
 
 export interface WorkflowConfig {

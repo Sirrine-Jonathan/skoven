@@ -4,7 +4,7 @@
  * Receives raw PCM audio chunks (16 kHz, mono, 16-bit LE) accumulated from
  * the Quest and returns a transcript string.
  *
- * Backend selection via FLOWSTATE_STT_BACKEND env var:
+ * Backend selection via SKOVEN_STT_BACKEND env var:
  *   openai_whisper  — sends audio to OpenAI Whisper API (default)
  *   passthrough     — expects text directly; used for desktop testing
  */
@@ -21,7 +21,7 @@ export class SpeechToText {
   private readonly openai: OpenAI | null;
 
   constructor() {
-    this.backend = (process.env["FLOWSTATE_STT_BACKEND"] ??
+    this.backend = (process.env["SKOVEN_STT_BACKEND"] ??
       "openai_whisper") as STTBackend;
 
     this.openai =
@@ -59,7 +59,7 @@ export class SpeechToText {
 
     // Whisper API requires a file upload. Write PCM as WAV to a temp file.
     const wavBuffer = pcmToWav(pcmBuffer, 16000, 1, 16);
-    const tmpPath = path.join(os.tmpdir(), `flowstate-stt-${Date.now()}.wav`);
+    const tmpPath = path.join(os.tmpdir(), `skoven-stt-${Date.now()}.wav`);
 
     try {
       fs.writeFileSync(tmpPath, wavBuffer);

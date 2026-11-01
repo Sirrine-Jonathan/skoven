@@ -1,4 +1,4 @@
-# Flowstate — Main Scene Setup Guide
+# Skoven — Main Scene Setup Guide
 
 This document describes how to configure the main Unity scene. There is no
 auto-generated scene YAML here (Unity scenes are binary); follow these steps
@@ -9,17 +9,17 @@ in the Unity Editor after importing the project.
 ## Scene hierarchy
 
 ```
-[Scene: FlowstateMain]
+[Scene: SkovenMain]
 ├── XR Origin (Action-Based)           ← Meta XR SDK prefab
 │   ├── Camera Offset
 │   │   └── Main Camera
 │   ├── LeftHand Controller
 │   └── RightHand Controller
 │
-├── Flowstate Core
+├── Skoven Core
 │   ├── WebSocketClient                 ← Network/WebSocketClient.cs
 │   ├── MessageRouter                   ← Network/MessageRouter.cs
-│   ├── FlowstateBootstrap              ← Agent/FlowstateBootstrap.cs
+│   ├── SkovenBootstrap              ← Agent/SkovenBootstrap.cs
 │   ├── VoiceCapture                    ← Voice/VoiceCapture.cs
 │   ├── VoiceInputController            ← Voice/VoiceInputController.cs
 │   ├── TtsPlayer                       ← Agent/TtsPlayer.cs
@@ -128,13 +128,13 @@ On the **MessageRouter** component, wire each UnityEvent to the correct method:
 1. **Project Settings → XR Plug-in Management**: enable OpenXR for Android.
 2. **OpenXR settings**: add Meta Quest Touch Pro Controller Profile and Meta Quest Touch Controller Profile.
 3. **Player Settings → Android**:
-   - Package name: `com.flowstate.app` (update once Meta app identity is created)
+   - Package name: `com.skoven.app` (update once Meta app identity is created)
    - Minimum API: 29 (Quest minimum)
    - Target API: 32
    - Scripting Backend: IL2CPP
    - Target Architecture: ARM64 only
 4. **Player Settings → Other → Internet Access**: Required (WebSocket + LLM API)
-5. **Player Settings → Other → Microphone Usage Description**: "Flowstate uses your microphone to capture voice commands."
+5. **Player Settings → Other → Microphone Usage Description**: "Skoven uses your microphone to capture voice commands."
 6. **Quality Settings**: use the URP Quest-optimized preset (Single Pass Instanced, no MSAA).
 
 ---
@@ -142,7 +142,7 @@ On the **MessageRouter** component, wire each UnityEvent to the correct method:
 ## Font import
 
 1. Download JetBrains Mono from https://www.jetbrains.com/lp/mono/ (OFL license)
-2. Import `JetBrainsMono-Regular.ttf` into `Assets/Flowstate/Fonts/`
+2. Import `JetBrainsMono-Regular.ttf` into `Assets/Skoven/Fonts/`
 3. Window → TextMeshPro → Font Asset Creator → generate atlas at 4096×4096, SDF mode
 4. Assign the resulting `.asset` to `WorkspaceSettings.codeFont`
 5. Repeat for OpenDyslexic (from https://opendyslexic.org, OFL license), assign to `dyslexiaFont`

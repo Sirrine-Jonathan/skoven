@@ -1,4 +1,4 @@
-# Flowstate — Product Brief
+# Skoven — Product Brief
 
 _Pipeline stage: 3 — Define the product_
 _Last updated: 2026-10-31_
@@ -8,9 +8,9 @@ _Status: Draft — pending Stage 2 market validation_
 
 ## Concept summary
 
-Flowstate is a VR productivity app for Meta Quest. It gives developers a spatial, distraction-free workspace where they operate their entire development workflow through natural voice conversation with an AI. No keyboard. No Alt-Tab. No notification pull. You put on the headset, describe what you want to build, and work with AI agents to plan, implement, review, and ship it — while floating code panels, task boards, and terminal output stay organized around you in three-dimensional space.
+Skoven is a VR productivity app for Meta Quest. It gives developers a spatial, distraction-free workspace where they operate their entire development workflow through natural voice conversation with an AI. No keyboard. No Alt-Tab. No notification pull. You put on the headset, describe what you want to build, and work with AI agents to plan, implement, review, and ship it — while floating code panels, task boards, and terminal output stay organized around you in three-dimensional space.
 
-The central insight: the Quest headset is the best distraction-blocking device most developers already own. Flowstate turns it into a productive tool rather than a toy.
+The central insight: the Quest headset is the best distraction-blocking device most developers already own. Skoven turns it into a productive tool rather than a toy.
 
 ---
 
@@ -20,7 +20,7 @@ The central insight: the Quest headset is the best distraction-blocking device m
 
 **Secondary:** Developers with repetitive strain injuries or physical accessibility needs who benefit from hands-free, voice-primary interaction. Remote workers who want a spatial separation between "deep work" and everything else.
 
-**Not the primary target:** Non-technical users, designers without coding workflows, or developers who need pixel-precise code editing (Flowstate delegates editing to agents and connected tools, not direct text input).
+**Not the primary target:** Non-technical users, designers without coding workflows, or developers who need pixel-precise code editing (Skoven delegates editing to agents and connected tools, not direct text input).
 
 ---
 
@@ -126,7 +126,7 @@ Developers can modify the pipeline by voice or by editing a YAML configuration:
 - Set auto-approve rules: _"Auto-approve commits on feature branches when tests pass."_
 - Pause points: require explicit approval before specific stages (e.g., always pause before push)
 
-Workflow configuration is per-project and lives in the project repository alongside the code (`.flowstate/workflow.yml`).
+Workflow configuration is per-project and lives in the project repository alongside the code (`.skoven/workflow.yml`).
 
 ---
 
@@ -165,7 +165,7 @@ Workflow configuration is per-project and lives in the project repository alongs
 - **No locomotion required.** The workspace comes to the developer; they do not move through a world.
 - **Text legibility is a hard constraint.** All code panels must be readable at a comfortable focal distance without leaning. Font, contrast, and panel distance are configurable.
 - **Voice-only is fully supported.** Every action available by hand or gaze is also available by voice. The experience does not degrade without hand interaction.
-- **Session duration limits** — Flowstate is designed for focused 30–90 minute sessions. The app gently suggests a break after 90 minutes of continuous headset use.
+- **Session duration limits** — Skoven is designed for focused 30–90 minute sessions. The app gently suggests a break after 90 minutes of continuous headset use.
 - **Transcripts always on** — every AI response and voice recognition result is shown in text. Captions cannot be disabled.
 - **Dyslexia-friendly font option** — OpenDyslexic or equivalent available in settings.
 
@@ -243,4 +243,4 @@ Workflow configuration is per-project and lives in the project repository alongs
 - [ ] LLM provider: OpenAI GPT-4o, Anthropic Claude, or model-agnostic (user supplies API key)
 - [ ] Agent framework: custom orchestration vs. existing framework (LangChain, AutoGen, CrewAI, Kiro agents)
 - [ ] Pricing: subscription (most comparable productivity tools) vs. one-time purchase — validate against Meta Horizon Store norms
-- [ ] App name: confirm "Flowstate" is not trademarked and is available as a Meta app identifier
+- [ ] App name: confirm "Skoven" is not trademarked and is available as a Meta app identifier

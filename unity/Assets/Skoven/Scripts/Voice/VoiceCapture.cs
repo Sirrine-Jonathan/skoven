@@ -1,9 +1,9 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using Flowstate.Network;
+using Skoven.Network;
 
-namespace Flowstate.Voice
+namespace Skoven.Voice
 {
     /// <summary>
     /// Captures microphone audio on push-to-talk (right grip) and streams
@@ -43,11 +43,11 @@ namespace Flowstate.Voice
             // Select the first available mic device
             if (Microphone.devices.Length == 0)
             {
-                Debug.LogError("[Flowstate] No microphone devices found.");
+                Debug.LogError("[Skoven] No microphone devices found.");
                 return;
             }
             _deviceName = Microphone.devices[0];
-            Debug.Log($"[Flowstate] Using microphone: {_deviceName}");
+            Debug.Log($"[Skoven] Using microphone: {_deviceName}");
         }
 
         private void OnDestroy()
@@ -72,7 +72,7 @@ namespace Flowstate.Voice
             // Wait for mic to warm up
             _streamCoroutine = StartCoroutine(StreamChunks());
 
-            Debug.Log("[Flowstate] Voice capture started.");
+            Debug.Log("[Skoven] Voice capture started.");
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace Flowstate.Voice
             Microphone.End(_deviceName);
             _isRecording = false;
 
-            Debug.Log("[Flowstate] Voice capture stopped.");
+            Debug.Log("[Skoven] Voice capture stopped.");
         }
 
         // ── Streaming ──────────────────────────────────────────────────────

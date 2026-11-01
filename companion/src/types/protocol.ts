@@ -1,5 +1,5 @@
 /**
- * Flowstate Wire Protocol
+ * Skoven Wire Protocol
  *
  * All messages exchanged between the Quest app and the companion app
  * over the WebSocket connection are typed here.

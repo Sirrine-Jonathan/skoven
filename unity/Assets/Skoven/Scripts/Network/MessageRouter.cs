@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace Flowstate.Network
+namespace Skoven.Network
 {
     /// <summary>
     /// Deserializes raw JSON messages from the companion app and routes
@@ -92,13 +92,13 @@ namespace Flowstate.Network
                         onSpeech?.Invoke(JsonConvert.DeserializeObject<SpeechMessage>(json));
                         break;
                     default:
-                        Debug.LogWarning($"[Flowstate] Unknown message type: {type}");
+                        Debug.LogWarning($"[Skoven] Unknown message type: {type}");
                         break;
                 }
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[Flowstate] Failed to route message: {ex.Message}\nJSON: {json}");
+                Debug.LogError($"[Skoven] Failed to route message: {ex.Message}\nJSON: {json}");
             }
         }
     }

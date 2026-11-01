@@ -1,4 +1,4 @@
-# Flowstate — Technical Design
+# Skoven — Technical Design
 
 _Pipeline stage: 3 — Define the product_
 _Last updated: 2026-10-31_
@@ -16,13 +16,13 @@ _Status: Draft — architecture pending prototype validation_
 | Render pipeline | Universal Render Pipeline (URP) | Recommended for Quest performance |
 | Passthrough | Not required at launch (productivity, not AR world-building) | Revisit post-launch |
 
-Flowstate is a seated productivity environment, not a spatially-mapped AR experience. Passthrough is not needed for the core loop. The workspace is a purpose-built VR room, not an overlay on the physical world.
+Skoven is a seated productivity environment, not a spatially-mapped AR experience. Passthrough is not needed for the core loop. The workspace is a purpose-built VR room, not an overlay on the physical world.
 
 ---
 
 ## System architecture overview
 
-Flowstate is a **two-process system**: the Quest app is the interface layer, and a host process (companion app or cloud environment) is the compute layer. Agents, LLM calls, and code execution happen on the host. The Quest streams voice input to the host and receives structured UI updates in return.
+Skoven is a **two-process system**: the Quest app is the interface layer, and a host process (companion app or cloud environment) is the compute layer. Agents, LLM calls, and code execution happen on the host. The Quest streams voice input to the host and receives structured UI updates in return.
 
 ```
 ┌─────────────────────────────────────┐     ┌──────────────────────────────────────────┐
@@ -127,9 +127,9 @@ Each pipeline stage is a typed step with:
 - `pause_policy` — `always`, `on_failure`, `never`, or `if_configured`
 - `timeout` — maximum execution time before the agent reports a stall
 
-Stages run sequentially by default. The developer can configure parallel execution for independent stages (e.g., run tests and lint simultaneously) in `.flowstate/workflow.yml`.
+Stages run sequentially by default. The developer can configure parallel execution for independent stages (e.g., run tests and lint simultaneously) in `.skoven/workflow.yml`.
 
-### `.flowstate/workflow.yml` (per-project configuration)
+### `.skoven/workflow.yml` (per-project configuration)
 
 ```yaml
 version: 1

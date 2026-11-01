@@ -1,8 +1,8 @@
 using UnityEngine;
-using Flowstate.Network;
-using Flowstate.Settings;
+using Skoven.Network;
+using Skoven.Settings;
 
-namespace Flowstate.UI
+namespace Skoven.UI
 {
     /// <summary>
     /// Routes workspace and session commands received from the companion app
@@ -28,7 +28,7 @@ namespace Flowstate.UI
         /// Handle a session_state message (e.g., on save or reconnect)
         public void OnSessionState(SessionStateMessage msg)
         {
-            Debug.Log($"[Flowstate] Session state: {msg.projectName} / {msg.branch}");
+            Debug.Log($"[Skoven] Session state: {msg.projectName} / {msg.branch}");
         }
 
         // ── Called directly from hand menu buttons ────────────────────────
@@ -58,7 +58,7 @@ namespace Flowstate.UI
         {
             SaveSession();
             panelManager?.SaveAllLayouts();
-            Debug.Log("[Flowstate] Session ended.");
+            Debug.Log("[Skoven] Session ended.");
             // In production: return to the home environment or quit
         }
     }

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
 
-namespace Flowstate.UI.Panels
+namespace Skoven.UI.Panels
 {
     /// <summary>
     /// Base class for all floating workspace panels.
@@ -69,10 +69,10 @@ namespace Flowstate.UI.Panels
 
         // ── Layout persistence ─────────────────────────────────────────────
 
-        private string PositionKey => $"flowstate.panel.{panelId}.pos";
-        private string RotationKey => $"flowstate.panel.{panelId}.rot";
-        private string ScaleKey    => $"flowstate.panel.{panelId}.scale";
-        private string VisibleKey  => $"flowstate.panel.{panelId}.visible";
+        private string PositionKey => $"skoven.panel.{panelId}.pos";
+        private string RotationKey => $"skoven.panel.{panelId}.rot";
+        private string ScaleKey    => $"skoven.panel.{panelId}.scale";
+        private string VisibleKey  => $"skoven.panel.{panelId}.visible";
 
         public void SaveLayout()
         {

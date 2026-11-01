@@ -1,8 +1,8 @@
 using UnityEngine;
 using UnityEngine.XR;
-using Flowstate.Network;
+using Skoven.Network;
 
-namespace Flowstate.Voice
+namespace Skoven.Voice
 {
     /// <summary>
     /// Maps XR controller input to voice capture.
