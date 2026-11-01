@@ -118,10 +118,10 @@ Remaining Stage 3 work:
 Required before Stage 6:
 - [ ] Pinned Unity version, Meta XR SDK version, and package manifest committed
 - [ ] Companion app dependencies pinned in package.json / requirements.txt
-- [ ] Application ID registered in Meta developer portal (test org)
+- [x] **Application ID registered in Meta developer portal** — App ID `1122808136998612`, package `com.sirrine.skoven`. See `docs/APP-IDENTITY.md`.
 - [ ] Clean development build installs and runs on Quest 3 from documented steps
 - [ ] Companion app installs and connects to Quest from documented steps
-- [ ] Secrets and API keys excluded from repository; `.env.example` provided
+- [x] **Secrets and API keys excluded from repository** — `.env.example` provided, `.env` in `.gitignore`
 - [ ] Second team member can reproduce the build from documented inputs
 
 ---
@@ -138,4 +138,4 @@ Required before Stage 6:
 | Meta Store rejects developer tools category | Medium | Review VRC and category policies in Stage 2 before building | Pending Stage 2 |
 | Companion app complexity underestimated | Medium | Scope companion app as a thin WebSocket bridge first; add features incrementally | Pending Stage 4 |
 | Agent produces incorrect or destructive code | Medium | Approval gates before every commit/push; undo always available | Design decision — ongoing |
-| "Skoven" name conflicts | Low | Trademark search in Stage 2 | Pending Stage 2 |
+| "Skoven" name conflicts | Low | Trademark search in Stage 2 | ✅ Clear — no software conflicts found, no USPTO IC042 trademark, confirmed 2026-10-31 |

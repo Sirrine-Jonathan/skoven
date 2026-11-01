@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bc3b9c3a0e764de3a5b1ccacb5f4b62, type: 3}
+  # Meta XR SDK OculusSettings
+  AppID: "1122808136998612"
+  # This AppID is read by the Oculus SDK on device at runtime.
+  # It must match the App ID on the Meta Developer Dashboard exactly.
+  LowOverheadMode: 0
+  OptimizeBufferDiscards: 1
+  EnableTrackingOriginStageMode: 1
+  UseRecommendedMSAALevel: 0
+  # MSAA disabled — use URP's own MSAA settings tuned for Quest
+  SupportedColorSpaces: 1
+  HandTrackingSupport: 2
+  # 0=ControllersOnly, 1=HandsOnly, 2=ControllersAndHands
+  HandTrackingFrequency: 1
+  # LOW=1, HIGH=2 — HIGH for better gesture recognition
+  HandTrackingVersion: 2
+  # V2 (OpenXR-based)
+  SystemSplashScreen: {fileID: 0}
+  FocusAwareness: 1
+  # Required for Quest — enables system overlay passthrough
+  EnableDynamicResolution: 1
+  ProcessorPerformanceMaxTimes: 3
+  EnableEyeTrackedFoveatedRendering: 0

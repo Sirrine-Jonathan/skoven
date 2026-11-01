@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 23
+  productName: Skoven
+  companyName: Sirrine-Jonathan
+  applicationIdentifier:
+    Android: com.sirrine.skoven
+  bundleVersion: 0.1.0
+  AndroidBundleVersionCode: 1
+  AndroidMinSdkVersion: 29
+  AndroidTargetSdkVersion: 32
+  AndroidArchitecture: 1
+  # ARM64 only (value 1). Quest requires 64-bit.
+  scriptingBackend:
+    Android: 1
+  # IL2CPP (value 1). Required for Quest release.
+  Il2CppCompilerConfiguration:
+    Android: 1
+  # Release (value 1).
+  stripEngineCode: 1
+  managedStrippingLevel:
+    Android: 1
+  internetAccess: 1
+  # Required — companion app WebSocket + LLM API
+  # Microphone usage set in AndroidManifest.xml via Meta XR SDK

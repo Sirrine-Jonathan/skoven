@@ -32,6 +32,16 @@ https://github.com/Sirrine-Jonathan/skoven
 
 Default branch: `main`. Follow the workspace [WORKFLOW.md](../WORKFLOW.md) for branch naming, PR conventions, and handoff.
 
+## Meta app identity
+
+| Field | Value |
+|---|---|
+| App ID | `1122808136998612` |
+| Package | `com.sirrine.skoven` |
+| Dashboard | https://developer.oculus.com/manage/applications/1122808136998612 |
+
+Full signing, channel, and entitlement details in `docs/APP-IDENTITY.md`. Do not alter the App ID in `OculusSettings.asset` or `OculusAppConfig.cs` without updating that document.
+
 ## Required verification and product constraints
 
 - Read the workspace `AGENTS.md`, `docs/VR-PRODUCT-PIPELINE.md`, and relevant shared skills under `.agents/skills/` before project work.
