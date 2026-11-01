@@ -45,9 +45,12 @@ namespace Skoven.Editor
             light.color = new Color(0.95f, 0.95f, 1.0f);
             lightGO.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
 
-            // 2. XR Rig
+            // 2. XR Rig & Passthrough Camera (AR Mode)
             GameObject xrOrigin = new GameObject("XROrigin");
             xrOrigin.transform.position = Vector3.zero;
+
+            OVRManager ovrManager = xrOrigin.AddComponent<OVRManager>();
+            ovrManager.isInsightPassthroughEnabled = true;
 
             GameObject cameraOffset = new GameObject("CameraOffset");
             cameraOffset.transform.SetParent(xrOrigin.transform);
@@ -60,10 +63,12 @@ namespace Skoven.Editor
 
             Camera mainCam = mainCamGO.AddComponent<Camera>();
             mainCam.clearFlags = CameraClearFlags.SolidColor;
-            mainCam.backgroundColor = new Color(0.04f, 0.04f, 0.06f, 1f); // immersive dark void
+            mainCam.backgroundColor = new Color(0f, 0f, 0f, 0f); // Pure transparent for passthrough (AR)
             mainCam.nearClipPlane = 0.05f;
             mainCam.farClipPlane = 100f;
             mainCamGO.AddComponent<AudioListener>();
+
+            mainCamGO.AddComponent<OVRPassthroughLayer>();
 
             var tpd = mainCamGO.AddComponent<TrackedPoseDriver>();
             tpd.SetPoseSource(TrackedPoseDriver.DeviceType.GenericXRDevice, TrackedPoseDriver.TrackedPose.Center);

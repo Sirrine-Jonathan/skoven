@@ -66,8 +66,8 @@ public static class SkovenBuild
         PlayerSettings.Android.bundleVersionCode       = VersionCode;
 
         PlayerSettings.colorSpace                      = ColorSpace.Linear;
-        PlayerSettings.Android.minSdkVersion           = AndroidSdkVersions.AndroidApiLevel29;
-        PlayerSettings.Android.targetSdkVersion        = (AndroidSdkVersions)32;
+        PlayerSettings.Android.minSdkVersion           = (AndroidSdkVersions)32;
+        PlayerSettings.Android.targetSdkVersion        = (AndroidSdkVersions)34;
         PlayerSettings.Android.targetArchitectures     = AndroidArchitecture.ARM64;
         PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
         PlayerSettings.Android.forceInternetPermission = true;

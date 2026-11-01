@@ -9,5 +9,5 @@ EditorBuildSettings:
     path: Assets/Skoven/Scenes/SkovenMain.unity
     guid: 21ba0a886723444798bc9ba21751bbf8
   m_configObjects:
-    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 09b6503b29faf49bb8ed2ff67279d387, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 73ebf4fe9ddb34b798b600683a9f5a53, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: d94f2397a3afe407b9b904a6be4f8d32, type: 2}
