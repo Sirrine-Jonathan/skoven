@@ -19,7 +19,7 @@ The Quest headset is the interface. Compute lives on the host machine or in the 
 ## Build path
 
 - Target platform: **Meta Quest 3** (primary), Quest 2 (secondary / reduced fidelity).
-- Engine: **Unity 6 LTS** with Meta XR SDK (All-in-One) and OpenXR backend.
+- Engine: **Unity 6 (6000.6.3f1)** with Meta XR SDK (All-in-One) and OpenXR backend.
 - Voice pipeline: Quest mic → VAD → STT (host-side Whisper) → LLM intent layer → agent dispatch → structured result → spatial UI update.
 - Host compute: companion app (Node.js/TypeScript) on developer's Mac/Windows machine, or cloud environment post-launch.
 - LLM: provider-agnostic (OpenAI, Anthropic, OpenRouter, Ollama, custom endpoint). All BYOK.

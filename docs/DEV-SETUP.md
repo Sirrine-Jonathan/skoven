@@ -158,17 +158,24 @@ Follow `Assets/Skoven/Scenes/SCENE-SETUP.md` for the full hierarchy and MessageR
 ### 6. Build and install on Quest
 
 ```bash
-# Enable Developer Mode on Quest 3:
-# Settings → About headset → tap "Build Number" 7 times
+# Quest 3 device serial: 2G0YC1ZFCN01JN (connected via USB Debugging)
+# Confirm connection:
+adb devices -l
 
-# Connect Quest via USB-C
-adb devices   # confirm device appears
+# Build and deploy in one step:
+./scripts/build-and-deploy.sh
 
-# Build in Unity:
-# File → Build Settings → Android → Build And Run
-# OR build to APK then:
-adb install -r path/to/Skoven.apk
+# Build only (no deploy):
+./scripts/build-and-deploy.sh --build
+
+# Deploy last build without rebuilding:
+./scripts/build-and-deploy.sh --deploy
+
+# Stream Unity logs from device:
+adb -s 2G0YC1ZFCN01JN logcat -s Unity:V
 ```
+
+The script calls Unity in batchmode, writes the APK to `builds/Skoven-dev.apk`, installs it with `adb install -r`, and launches the app automatically.
 
 ---
 

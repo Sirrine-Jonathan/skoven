@@ -4,6 +4,24 @@ All platform identity, signing, and publishing information for the Meta Horizon 
 
 ---
 
+## Test device
+
+| Field | Value |
+|---|---|
+| Model | Meta Quest 3 |
+| Serial | `2G0YC1ZFCN01JN` |
+| Android | 14 (API 34) |
+| Build | `UP1A.231005.007.A1` |
+| USB Debugging | Enabled |
+| Connection | USB (ADB confirmed `device` state) |
+
+Add this serial to the app's **Device List** in the Meta Developer Dashboard at:
+https://developer.oculus.com/manage/applications/1122808136998612
+
+This is required for development builds to pass the platform entitlement check on the device.
+
+---
+
 ## Meta Developer Dashboard
 
 | Field | Value |
