@@ -27,15 +27,70 @@ namespace Skoven.Editor
         public const string SceneFolder = "Assets/Skoven/Scenes";
         public const string ScenePath = SceneFolder + "/SkovenMain.unity";
 
+        [MenuItem("Skoven/Import TMP Resources")]
+        public static void ImportTMPResources()
+        {
+            if (AssetDatabase.FindAssets("t:TMP_Settings").Length == 0)
+            {
+                Debug.Log("[TMP] Importing TMP Essential Resources headlessly...");
+                string[] packages = Directory.GetFiles("Library/PackageCache", "TMP Essential Resources.unitypackage", SearchOption.AllDirectories);
+                if (packages.Length > 0)
+                {
+                    AssetDatabase.ImportPackage(packages[0], false);
+                    Debug.Log($"[TMP] Successfully imported {packages[0]}");
+                }
+            }
+        }
+
+        [MenuItem("Skoven/Configure OpenXR")]
+        public static void ConfigureOpenXR()
+        {
+            var settings = UnityEngine.XR.OpenXR.OpenXRSettings.GetSettingsForBuildTargetGroup(BuildTargetGroup.Android);
+            if (settings != null)
+            {
+                foreach (var feature in settings.GetFeatures())
+                {
+                    string typeName = feature.GetType().Name;
+                    if (typeName.Contains("MetaQuestFeature") ||
+                        typeName.Contains("TouchPlus") ||
+                        typeName.Contains("TouchPro") ||
+                        typeName.Contains("OculusTouch") ||
+                        typeName.Contains("HandInteraction"))
+                    {
+                        feature.enabled = true;
+                        Debug.Log($"[OpenXR] Enabled feature: {typeName}");
+                    }
+                }
+                EditorUtility.SetDirty(settings);
+            }
+
+            var config = OVRProjectConfig.CachedProjectConfig;
+            if (config != null)
+            {
+                config.insightPassthroughSupport = OVRProjectConfig.FeatureSupport.Required;
+                config.handTrackingSupport = OVRProjectConfig.HandTrackingSupport.ControllersAndHands;
+                OVRProjectConfig.CommitProjectConfig(config);
+                Debug.Log("[OVRProjectConfig] Configured passthrough support as Required and hands+controllers");
+            }
+
+            AssetDatabase.SaveAssets();
+        }
+
         [MenuItem("Skoven/Build Main Scene")]
         public static void BuildScene()
         {
             Debug.Log("=== Assembling Skoven Main Scene ===");
 
+            ImportTMPResources();
+            ConfigureOpenXR();
+
             if (!Directory.Exists(SceneFolder))
                 Directory.CreateDirectory(SceneFolder);
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+
+            // Clear skybox so camera clears to transparent alpha 0 for Passthrough (AR) underlay
+            RenderSettings.skybox = null;
 
             // 1. Directional Sun Light
             GameObject lightGO = new GameObject("Directional Light");
@@ -90,9 +145,9 @@ namespace Skoven.Editor
             bootstrap.wsClient = wsClient;
             bootstrap.voiceCapture = voiceCapture;
 
-            // 4. Floating Workspace Panels
+            // 4. Floating Workspace Panels (Centered at comfortable eye-level ~1.35m)
             GameObject panelsRoot = new GameObject("Panels");
-            panelsRoot.transform.position = Vector3.zero;
+            panelsRoot.transform.position = new Vector3(0f, 1.35f, 0f);
 
             ChatPanel chatPanel = CreateChatPanel(panelsRoot.transform);
             DiffPanel diffPanel = CreateDiffPanel(panelsRoot.transform);
@@ -198,7 +253,8 @@ namespace Skoven.Editor
 
         private static DiffPanel CreateDiffPanel(Transform parent)
         {
-            GameObject root = CreatePanelRoot<DiffPanel>(parent, "DiffPanel", new Vector3(-0.95f, 0f, 1.4f), new Vector2(900, 600), FloatingPanel.PanelId.Diff);
+            GameObject root = CreatePanelRoot<DiffPanel>(parent, "DiffPanel", new Vector3(-1.15f, 0f, 1.4f), new Vector2(900, 600), FloatingPanel.PanelId.Diff);
+            root.transform.localRotation = Quaternion.Euler(0f, 20f, 0f);
             DiffPanel panel = root.GetComponent<DiffPanel>();
 
             panel.summaryTextMesh = CreateTMP(root.transform, "SummaryText", "Diff Viewer - No active diffs", 20, new Vector2(840, 40), new Vector2(0, 250));
@@ -209,7 +265,7 @@ namespace Skoven.Editor
 
         private static TaskBoardPanel CreateTaskBoardPanel(Transform parent)
         {
-            GameObject root = CreatePanelRoot<TaskBoardPanel>(parent, "TaskBoardPanel", new Vector3(0f, 0.65f, 1.5f), new Vector2(800, 320), FloatingPanel.PanelId.TaskBoard);
+            GameObject root = CreatePanelRoot<TaskBoardPanel>(parent, "TaskBoardPanel", new Vector3(0f, 0.55f, 1.5f), new Vector2(800, 320), FloatingPanel.PanelId.TaskBoard);
             TaskBoardPanel panel = root.GetComponent<TaskBoardPanel>();
 
             panel.taskTitleText = CreateTMP(root.transform, "TaskTitle", "Task Board", 24, new Vector2(740, 50), new Vector2(0, 110));
@@ -221,7 +277,8 @@ namespace Skoven.Editor
 
         private static AgentLogPanel CreateAgentLogPanel(Transform parent)
         {
-            GameObject root = CreatePanelRoot<AgentLogPanel>(parent, "AgentLogPanel", new Vector3(0.95f, 0f, 1.4f), new Vector2(800, 550), FloatingPanel.PanelId.AgentLog);
+            GameObject root = CreatePanelRoot<AgentLogPanel>(parent, "AgentLogPanel", new Vector3(1.15f, 0f, 1.4f), new Vector2(800, 550), FloatingPanel.PanelId.AgentLog);
+            root.transform.localRotation = Quaternion.Euler(0f, -20f, 0f);
             AgentLogPanel panel = root.GetComponent<AgentLogPanel>();
 
             panel.logTextMesh = CreateTMP(root.transform, "LogText", "Agent Log - Waiting for activity...", 18, new Vector2(740, 480), new Vector2(0, 0));
@@ -231,7 +288,7 @@ namespace Skoven.Editor
 
         private static TerminalPanel CreateTerminalPanel(Transform parent)
         {
-            GameObject root = CreatePanelRoot<TerminalPanel>(parent, "TerminalPanel", new Vector3(0f, -0.65f, 1.5f), new Vector2(800, 320), FloatingPanel.PanelId.Terminal);
+            GameObject root = CreatePanelRoot<TerminalPanel>(parent, "TerminalPanel", new Vector3(0f, -0.55f, 1.5f), new Vector2(800, 320), FloatingPanel.PanelId.Terminal);
             TerminalPanel panel = root.GetComponent<TerminalPanel>();
 
             panel.outputTextMesh = CreateTMP(root.transform, "OutputText", "Terminal: Idle", 18, new Vector2(740, 260), new Vector2(0, 0));

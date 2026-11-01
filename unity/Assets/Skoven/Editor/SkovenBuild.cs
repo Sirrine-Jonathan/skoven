@@ -44,9 +44,12 @@ public static class SkovenBuild
 
     private static void BuildInternal(string outputPath, bool buildAppBundle)
     {
+        outputPath = Path.GetFullPath(outputPath);
         Debug.Log($"=== Starting Skoven Meta Quest Build (v{VersionString} code {VersionCode}) → {outputPath} ===");
 
-        // 1. Ensure scene exists or rebuild fresh
+        // 1. Ensure OpenXR is configured and scene exists
+        SkovenProjectSetup.ConfigureOpenXR();
+
         if (!File.Exists(SkovenProjectSetup.ScenePath))
         {
             Debug.Log("[SkovenBuild] Scene file not found. Generating fresh scene...");
@@ -66,7 +69,7 @@ public static class SkovenBuild
         PlayerSettings.Android.bundleVersionCode       = VersionCode;
 
         PlayerSettings.colorSpace                      = ColorSpace.Linear;
-        PlayerSettings.Android.minSdkVersion           = (AndroidSdkVersions)32;
+        PlayerSettings.Android.minSdkVersion           = (AndroidSdkVersions)29;
         PlayerSettings.Android.targetSdkVersion        = (AndroidSdkVersions)34;
         PlayerSettings.Android.targetArchitectures     = AndroidArchitecture.ARM64;
         PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);

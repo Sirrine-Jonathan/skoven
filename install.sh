@@ -4,18 +4,18 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APK_PATH="$SCRIPT_DIR/Builds/Skoven.apk"
 PACKAGE_NAME="com.sirrine.skoven"
-ACTIVITY_NAME="com.unity3d.player.UnityPlayerActivity"
+ACTIVITY_NAME="com.unity3d.player.UnityPlayerGameActivity"
 
 echo "=== Checking ADB Devices ==="
-metavr adb devices
+adb devices -l
 
-QUEST_SERIAL=$(metavr adb devices | grep -E "device$" | awk '{print $1}' | head -n 1)
+QUEST_SERIAL=$(adb devices -l | grep -E "Quest_3|eureka|2G0YC1ZFCN01JN" | awk '{print $1}' | head -n 1)
 
 if [ -z "$QUEST_SERIAL" ]; then
-    echo "⚠️ Quest not currently detected in metavr adb devices."
+    echo "⚠️ Quest not currently detected in adb devices."
     echo "Waiting up to 15 seconds for Quest to connect..."
     for i in {1..15}; do
-        QUEST_SERIAL=$(metavr adb devices | grep -E "device$" | awk '{print $1}' | head -n 1)
+        QUEST_SERIAL=$(adb devices -l | grep -E "Quest_3|eureka|2G0YC1ZFCN01JN" | awk '{print $1}' | head -n 1)
         if [ -n "$QUEST_SERIAL" ]; then
             echo "✅ Quest connected: $QUEST_SERIAL"
             break
@@ -42,9 +42,9 @@ if [ ! -f "$APK_PATH" ]; then
 fi
 
 echo "📦 Installing $APK_PATH to Meta Quest ($QUEST_SERIAL)..."
-metavr adb install -r "$APK_PATH"
+adb -s "$QUEST_SERIAL" install -r "$APK_PATH"
 
 echo "🚀 Launching $PACKAGE_NAME on Quest..."
-metavr adb shell am start -n "$PACKAGE_NAME/$ACTIVITY_NAME"
+adb -s "$QUEST_SERIAL" shell am start -n "$PACKAGE_NAME/$ACTIVITY_NAME"
 
 echo "✅ Skoven started! Put on your headset."
