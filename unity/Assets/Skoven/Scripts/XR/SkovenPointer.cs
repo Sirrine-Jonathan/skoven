@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,13 +9,14 @@ using Skoven.UI.Panels;
 namespace Skoven.XR
 {
     /// <summary>
-    /// 6DOF Controller Tracking, Laser Pointer, and Spatial UI/Panel Interactor for Meta Quest.
-    /// Supports:
-    /// - 6DOF controller pose tracking via InputDevices (Right & Left)
-    /// - Pointer ray with visual line renderer and surface reticle
-    /// - Trigger click on UI Buttons (e.g. Talk button, approval buttons)
-    /// - Grip-to-move for floating panels (hold grip while pointing at a panel to reposition in AR)
-    /// - Haptic pulses on button hover/click and panel grab
+    /// Interactive 6DOF VR Ray Pointer for UI and Workspace Panel interaction on Meta Quest.
+    /// Implements patterns from the portfolio meta-quest-controller-input skill:
+    /// - Dual-path OpenXR device binding (characteristics + XRNode fallback)
+    /// - Separation of tracking root from pointer nozzle emitter
+    /// - Interruption recovery (focus, pause, connect, disconnect)
+    /// - Edge-detected trigger/primary button click with procedural audio + haptics
+    /// - Visual button hover state (scale bounce, color highlight, haptic tick)
+    /// - Grip-to-move for floating workspace panels with layout persistence
     /// </summary>
     public class SkovenPointer : MonoBehaviour
     {
@@ -21,18 +24,29 @@ namespace Skoven.XR
 
         [Header("Hand Setup")]
         public HandType hand = HandType.Right;
-        public float pointerPitchOffset = -18f; // calibrated angle for natural pointer ray
-        public float maxRayDistance = 6f;
+        public float pointerPitchOffset = -20.0f; // Emitter nozzle pitch relative to controller grip
+        public float maxRayDistance = 8.0f;
+        public LayerMask raycastMask = ~0;
 
-        [Header("Visuals")]
-        public LineRenderer pointerLine;
+        [Header("Visual Components")]
+        public LineRenderer lineRenderer;
         public Transform reticle;
+        public Color normalBeamColor = new Color(0.2f, 0.7f, 1f, 0.6f);
+        public Color hoverBeamColor = new Color(0.3f, 0.95f, 0.4f, 0.85f);
 
-        private InputDevice _device;
-        private float _lastBindTime;
+        [Header("State")]
+        public bool isPointerActive = true;
+        public bool IsPositionTracked { get; private set; }
+        public bool IsDeviceValid => _xrDevice.isValid;
+
+        private InputDevice _xrDevice;
         private bool _triggerWasPressed;
         private bool _gripWasPressed;
-        private Button _hoveredButton;
+        private GameObject _hoveredObject;
+        private AudioSource _audioSource;
+        private MeshRenderer _reticleRenderer;
+        private Material _beamMat;
+        private float _lastBindCheck;
 
         // Panel grabbing
         private FloatingPanel _grabbedPanel;
@@ -42,61 +56,203 @@ namespace Skoven.XR
 
         private void Awake()
         {
-            if (pointerLine == null)
-                pointerLine = GetComponent<LineRenderer>();
+            SetupAudio();
+            SetupVisuals();
         }
 
-        private void Start()
+        private void OnEnable()
         {
-            BindDevice();
+            InputDevices.deviceConnected += OnDeviceConnected;
+            InputDevices.deviceDisconnected += OnDeviceDisconnected;
+        }
+
+        private void OnDisable()
+        {
+            InputDevices.deviceConnected -= OnDeviceConnected;
+            InputDevices.deviceDisconnected -= OnDeviceDisconnected;
+            ClearInteractionState();
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            if (hasFocus)
+            {
+                _triggerWasPressed = false;
+                _gripWasPressed = false;
+                TryBindDevice();
+            }
+            else
+            {
+                ClearInteractionState();
+            }
+        }
+
+        private void OnApplicationPause(bool pauseStatus)
+        {
+            if (!pauseStatus)
+            {
+                _triggerWasPressed = false;
+                _gripWasPressed = false;
+                TryBindDevice();
+            }
+            else
+            {
+                ClearInteractionState();
+            }
+        }
+
+        private void OnDeviceConnected(InputDevice dev)
+        {
+            TryBindDevice();
+        }
+
+        private void OnDeviceDisconnected(InputDevice dev)
+        {
+            if (dev == _xrDevice)
+            {
+                _xrDevice = default;
+                ClearInteractionState();
+            }
+        }
+
+        private void ClearInteractionState()
+        {
+            IsPositionTracked = false;
+            UpdateHover(null);
+            if (_grabbedPanel != null)
+            {
+                _grabbedPanel.SaveLayout();
+                _grabbedPanel = null;
+            }
+            if (lineRenderer != null) lineRenderer.enabled = false;
+            if (reticle != null) reticle.gameObject.SetActive(false);
+        }
+
+        private void SetupAudio()
+        {
+            _audioSource = GetComponent<AudioSource>();
+            if (_audioSource == null) _audioSource = gameObject.AddComponent<AudioSource>();
+            _audioSource.playOnAwake = false;
+            _audioSource.spatialBlend = 0.5f;
+        }
+
+        private void SetupVisuals()
+        {
+            if (lineRenderer == null)
+                lineRenderer = GetComponent<LineRenderer>();
+            if (lineRenderer == null)
+                lineRenderer = gameObject.AddComponent<LineRenderer>();
+
+            lineRenderer.positionCount = 2;
+            lineRenderer.startWidth = 0.005f;
+            lineRenderer.endWidth = 0.002f;
+            lineRenderer.useWorldSpace = true;
+            lineRenderer.numCapVertices = 4;
+            lineRenderer.numCornerVertices = 4;
+
+            _beamMat = new Material(Shader.Find("Sprites/Default") ?? Shader.Find("UI/Default"));
+            _beamMat.color = (hand == HandType.Left)
+                ? new Color(0.25f, 0.85f, 0.95f, 0.65f) // Teal/Cyan for Left
+                : new Color(0.28f, 0.55f, 1.0f, 0.65f);  // Blue for Right
+            lineRenderer.material = _beamMat;
+
+            if (reticle == null)
+            {
+                GameObject retObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                retObj.name = hand + "_Reticle";
+                retObj.transform.localScale = Vector3.one * 0.018f;
+                Destroy(retObj.GetComponent<Collider>());
+                reticle = retObj.transform;
+            }
+
+            _reticleRenderer = reticle.GetComponent<MeshRenderer>();
+            if (_reticleRenderer != null)
+                _reticleRenderer.material = _beamMat;
         }
 
         private void Update()
         {
-            if (!_device.isValid)
-            {
-                if (Time.time - _lastBindTime > 1.0f)
-                {
-                    _lastBindTime = Time.time;
-                    BindDevice();
-                }
-                return;
-            }
-
-            UpdateTrackingPose();
-            ProcessRayAndInteraction();
+            UpdateDeviceBinding();
+            UpdateControllerPose();
+            ProcessRaycastAndInteraction();
         }
 
-        private void BindDevice()
+        private void UpdateDeviceBinding()
         {
-            var characteristics = InputDeviceCharacteristics.Controller |
+            if (!_xrDevice.isValid)
+            {
+                TryBindDevice();
+            }
+            else if (!IsPositionTracked && Time.unscaledTime - _lastBindCheck > 0.5f)
+            {
+                _lastBindCheck = Time.unscaledTime;
+                TryBindDevice();
+            }
+        }
+
+        private void TryBindDevice()
+        {
+            var desiredChars = InputDeviceCharacteristics.Controller |
                 (hand == HandType.Left ? InputDeviceCharacteristics.Left : InputDeviceCharacteristics.Right);
 
             var devices = new List<InputDevice>();
-            InputDevices.GetDevicesWithCharacteristics(characteristics, devices);
-            if (devices.Count > 0)
+            InputDevices.GetDevicesWithCharacteristics(desiredChars, devices);
+
+            if (devices.Count > 0 && devices[0].isValid)
             {
-                _device = devices[0];
-                Debug.Log($"[Skoven.XR] Bound {hand} controller: {_device.name}");
+                _xrDevice = devices[0];
+            }
+            else
+            {
+                XRNode node = (hand == HandType.Left) ? XRNode.LeftHand : XRNode.RightHand;
+                _xrDevice = InputDevices.GetDeviceAtXRNode(node);
+            }
+
+            if (_xrDevice.isValid)
+            {
+                Debug.Log($"[SkovenPointer] Bound {hand} controller: '{_xrDevice.name}'");
             }
         }
 
-        private void UpdateTrackingPose()
+        private void UpdateControllerPose()
         {
-            if (_device.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 position))
-                transform.localPosition = position;
+            if (!_xrDevice.isValid)
+            {
+                IsPositionTracked = false;
+                return;
+            }
 
-            if (_device.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion rotation))
-                transform.localRotation = rotation;
+            if (_xrDevice.TryGetFeatureValue(CommonUsages.devicePosition, out Vector3 devPos))
+            {
+                transform.localPosition = devPos;
+                IsPositionTracked = true;
+            }
+            else
+            {
+                IsPositionTracked = false;
+            }
+
+            if (_xrDevice.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion devRot))
+            {
+                transform.localRotation = devRot;
+            }
         }
 
-        private void ProcessRayAndInteraction()
+        private void ProcessRaycastAndInteraction()
         {
+            if (!isPointerActive || !IsPositionTracked)
+            {
+                if (lineRenderer != null) lineRenderer.enabled = false;
+                if (reticle != null) reticle.gameObject.SetActive(false);
+                UpdateHover(null);
+                return;
+            }
+
             Vector3 rayOrigin = transform.position;
             Vector3 rayDir = transform.rotation * Quaternion.Euler(pointerPitchOffset, 0f, 0f) * Vector3.forward;
 
-            // Handle panel dragging if currently grabbing
-            bool gripPressed = IsGripPressed();
+            // Handle active panel dragging
+            bool gripPressed = ReadGripPressed();
             if (_grabbedPanel != null)
             {
                 if (gripPressed)
@@ -107,11 +263,11 @@ namespace Skoven.XR
                     Quaternion rotDelta = transform.rotation * Quaternion.Inverse(_grabControllerRot);
                     _grabbedPanel.transform.rotation = rotDelta * _grabPanelRot;
 
-                    if (pointerLine != null)
+                    if (lineRenderer != null)
                     {
-                        pointerLine.enabled = true;
-                        pointerLine.SetPosition(0, rayOrigin);
-                        pointerLine.SetPosition(1, targetPos);
+                        lineRenderer.enabled = true;
+                        lineRenderer.SetPosition(0, rayOrigin);
+                        lineRenderer.SetPosition(1, targetPos);
                     }
                     if (reticle != null)
                     {
@@ -122,109 +278,164 @@ namespace Skoven.XR
                 }
                 else
                 {
-                    // Released panel
                     _grabbedPanel.SaveLayout();
                     _grabbedPanel = null;
-                    SendHaptic(0.3f, 0.05f);
+                    SendHapticImpulse(0.35f, 0.06f);
                 }
             }
 
-            // Raycast against all scene colliders
-            int layerMask = ~0;
-            bool hitSomething = Physics.Raycast(rayOrigin, rayDir, out RaycastHit hit, maxRayDistance, layerMask);
+            if (lineRenderer != null) lineRenderer.enabled = true;
 
-            Vector3 endPoint = hitSomething ? hit.point : rayOrigin + rayDir * 2.5f;
+            Ray ray = new Ray(rayOrigin, rayDir);
+            Vector3 hitPoint = rayOrigin + rayDir * maxRayDistance;
+            GameObject hitObj = null;
+            bool hitInteractive = false;
 
-            if (pointerLine != null)
+            if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, raycastMask))
             {
-                pointerLine.enabled = true;
-                pointerLine.SetPosition(0, rayOrigin);
-                pointerLine.SetPosition(1, endPoint);
+                hitPoint = hit.point;
+                hitObj = hit.collider.gameObject;
+                Button btn = hitObj.GetComponentInParent<Button>();
+                if (btn != null && btn.interactable)
+                    hitInteractive = true;
+            }
+
+            UpdateHover(hitObj);
+
+            // Update line & reticle
+            if (lineRenderer != null)
+            {
+                lineRenderer.SetPosition(0, rayOrigin);
+                lineRenderer.SetPosition(1, hitPoint);
+                Color targetCol = hitInteractive ? hoverBeamColor : normalBeamColor;
+                _beamMat.color = targetCol;
             }
 
             if (reticle != null)
             {
-                reticle.gameObject.SetActive(hitSomething);
-                if (hitSomething)
-                {
-                    reticle.position = hit.point;
-                    reticle.rotation = Quaternion.LookRotation(hit.normal);
-                }
+                reticle.position = hitPoint;
+                reticle.rotation = Quaternion.LookRotation(rayDir);
+                reticle.gameObject.SetActive(true);
             }
 
-            if (!hitSomething)
+            // Click handling (Trigger or Primary A/X button)
+            bool triggerPressed = ReadTriggerPressed();
+            if (triggerPressed && !_triggerWasPressed && hitInteractive)
             {
-                _hoveredButton = null;
-                _gripWasPressed = gripPressed;
-                _triggerWasPressed = IsTriggerPressed();
-                return;
-            }
-
-            // Check button hover
-            var btn = hit.collider.GetComponentInParent<Button>();
-            if (btn != null && btn != _hoveredButton)
-            {
-                _hoveredButton = btn;
-                SendHaptic(0.15f, 0.02f);
-            }
-            else if (btn == null)
-            {
-                _hoveredButton = null;
-            }
-
-            // Check Trigger Click
-            bool triggerPressed = IsTriggerPressed();
-            if (triggerPressed && !_triggerWasPressed)
-            {
-                if (_hoveredButton != null && _hoveredButton.interactable)
-                {
-                    _hoveredButton.onClick.Invoke();
-                    SendHaptic(0.5f, 0.06f);
-                }
+                ExecuteClick(hitObj);
             }
             _triggerWasPressed = triggerPressed;
 
-            // Check Grip to Grab Panel (Left hand grab, or either hand when not on button)
-            bool canGrab = (hand == HandType.Left) || (hand == HandType.Right && _hoveredButton == null);
-            if (canGrab && gripPressed && !_gripWasPressed)
+            // Panel Grab handling (Left hand grab, or either hand when not clicking a button)
+            bool canGrab = (hand == HandType.Left) || (hand == HandType.Right && !hitInteractive);
+            if (canGrab && gripPressed && !_gripWasPressed && hitObj != null)
             {
-                var panel = hit.collider.GetComponentInParent<FloatingPanel>();
+                var panel = hitObj.GetComponentInParent<FloatingPanel>();
                 if (panel != null)
                 {
                     _grabbedPanel = panel;
                     _grabDistance = Vector3.Distance(rayOrigin, hit.point);
                     _grabControllerRot = transform.rotation;
                     _grabPanelRot = panel.transform.rotation;
-                    SendHaptic(0.4f, 0.06f);
+                    SendHapticImpulse(0.45f, 0.08f);
                 }
             }
             _gripWasPressed = gripPressed;
         }
 
-        private bool IsTriggerPressed()
+        private void UpdateHover(GameObject newObject)
         {
-            if (_device.TryGetFeatureValue(CommonUsages.triggerButton, out bool pressed) && pressed)
-                return true;
-            if (_device.TryGetFeatureValue(CommonUsages.trigger, out float val) && val > 0.5f)
-                return true;
-            return false;
-        }
-
-        private bool IsGripPressed()
-        {
-            if (_device.TryGetFeatureValue(CommonUsages.gripButton, out bool pressed) && pressed)
-                return true;
-            if (_device.TryGetFeatureValue(CommonUsages.grip, out float val) && val > 0.5f)
-                return true;
-            return false;
-        }
-
-        public void SendHaptic(float amplitude, float duration)
-        {
-            if (_device.isValid)
+            if (newObject != _hoveredObject)
             {
-                _device.SendHapticImpulse(0, Mathf.Clamp01(amplitude), duration);
+                if (_hoveredObject != null)
+                {
+                    Button prevBtn = _hoveredObject.GetComponentInParent<Button>();
+                    if (prevBtn != null)
+                    {
+                        prevBtn.transform.localScale = Vector3.one;
+                    }
+                }
+
+                _hoveredObject = newObject;
+
+                if (_hoveredObject != null)
+                {
+                    Button newBtn = _hoveredObject.GetComponentInParent<Button>();
+                    if (newBtn != null && newBtn.interactable)
+                    {
+                        newBtn.transform.localScale = Vector3.one * 1.035f;
+                        SendHapticImpulse(0.2f, 0.04f);
+                    }
+                }
             }
+        }
+
+        private void ExecuteClick(GameObject target)
+        {
+            if (target == null) return;
+            Button button = target.GetComponentInParent<Button>();
+            if (button != null && button.interactable)
+            {
+                Debug.Log($"[SkovenPointer] {hand} clicked button: {button.name}");
+                button.onClick.Invoke();
+                SendHapticImpulse(0.85f, 0.12f);
+                PlayClickSound();
+            }
+        }
+
+        public bool ReadTriggerPressed()
+        {
+            if (_xrDevice.isValid)
+            {
+                if (_xrDevice.TryGetFeatureValue(CommonUsages.triggerButton, out bool btn) && btn) return true;
+                if (_xrDevice.TryGetFeatureValue(CommonUsages.trigger, out float val) && val > 0.4f) return true;
+                if (_xrDevice.TryGetFeatureValue(CommonUsages.primaryButton, out bool pBtn) && pBtn) return true;
+            }
+            return false;
+        }
+
+        public bool ReadGripPressed()
+        {
+            if (_xrDevice.isValid)
+            {
+                if (_xrDevice.TryGetFeatureValue(CommonUsages.gripButton, out bool btn) && btn) return true;
+                if (_xrDevice.TryGetFeatureValue(CommonUsages.grip, out float val) && val > 0.45f) return true;
+            }
+            return false;
+        }
+
+        public void SendHapticImpulse(float amplitude, float duration)
+        {
+            if (_xrDevice.isValid && _xrDevice.TryGetHapticCapabilities(out HapticCapabilities caps) && caps.supportsImpulse)
+            {
+                _xrDevice.SendHapticImpulse(0, Mathf.Clamp01(amplitude), duration);
+            }
+        }
+
+        private void PlayClickSound()
+        {
+            if (_audioSource != null)
+            {
+                _audioSource.PlayOneShot(GetClickClip());
+            }
+        }
+
+        private static AudioClip s_CachedClickClip;
+        private static AudioClip GetClickClip()
+        {
+            if (s_CachedClickClip != null) return s_CachedClickClip;
+            int sampleRate = 22050;
+            int clickSamples = (int)(sampleRate * 0.035f);
+            float[] clickData = new float[clickSamples];
+            for (int i = 0; i < clickSamples; i++)
+            {
+                float t = (float)i / sampleRate;
+                float env = Mathf.Exp(-t * 90f);
+                clickData[i] = Mathf.Sin(2f * Mathf.PI * 1800f * t) * env * 0.65f;
+            }
+            s_CachedClickClip = AudioClip.Create("SkovenPointer_Click", clickSamples, 1, sampleRate, false);
+            s_CachedClickClip.SetData(clickData, 0);
+            return s_CachedClickClip;
         }
     }
 }

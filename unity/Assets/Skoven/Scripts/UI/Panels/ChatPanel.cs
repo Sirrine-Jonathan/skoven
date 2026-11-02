@@ -44,10 +44,39 @@ namespace Skoven.UI.Panels
                 rejectButton.onClick.AddListener(OnRejectClicked);
         }
 
+        protected override void Start()
+        {
+            base.Start();
+            var ws = FindFirstObjectByType<WebSocketClient>();
+            if (ws != null)
+            {
+                ws.OnConnected += () =>
+                {
+                    if (statusTextMesh != null)
+                        statusTextMesh.text = "<b>Skoven Orchestrator</b>  ·  <color=#4EC94E>● Connected to Host</color>";
+                };
+                ws.OnDisconnected += () =>
+                {
+                    if (statusTextMesh != null)
+                        statusTextMesh.text = "<b>Skoven Orchestrator</b>  ·  <color=#E05555>○ Offline (Companion port 8765)</color>";
+                };
+                if (!ws.IsConnected && statusTextMesh != null)
+                {
+                    statusTextMesh.text = "<b>Skoven Orchestrator</b>  ·  <color=#E05555>○ Offline (Companion port 8765)</color>";
+                }
+            }
+        }
+
         // ── Public API ─────────────────────────────────────────────────────
 
         public void ToggleVoiceCapture()
         {
+            var ws = FindFirstObjectByType<WebSocketClient>();
+            if (ws != null && !ws.IsConnected)
+            {
+                AddLine("<color=#FF8888>⚠️ Companion server is offline. Run 'npm start' in companion/ on host.</color>");
+            }
+
             var vc = FindFirstObjectByType<Voice.VoiceCapture>();
             if (vc != null)
             {

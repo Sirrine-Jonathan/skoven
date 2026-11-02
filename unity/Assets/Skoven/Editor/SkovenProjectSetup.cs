@@ -294,7 +294,7 @@ namespace Skoven.Editor
             Material lineMat = new Material(Shader.Find("Sprites/Default"));
             lineMat.color = new Color(0.25f, 0.75f, 1.0f, 0.65f);
             line.material = lineMat;
-            pointer.pointerLine = line;
+            pointer.lineRenderer = line;
 
             // Reticle sphere at ray endpoint
             GameObject reticleGO = GameObject.CreatePrimitive(PrimitiveType.Sphere);

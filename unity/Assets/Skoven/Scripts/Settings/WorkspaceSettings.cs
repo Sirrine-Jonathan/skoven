@@ -31,7 +31,7 @@ namespace Skoven.Settings
 
         public string HostAddress
         {
-            get => PlayerPrefs.GetString("fs.host.address", "192.168.1.100");
+            get => PlayerPrefs.GetString("fs.host.address", "127.0.0.1");
             set { PlayerPrefs.SetString("fs.host.address", value); PlayerPrefs.Save(); }
         }
 
