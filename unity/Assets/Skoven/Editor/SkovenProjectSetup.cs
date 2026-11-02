@@ -14,6 +14,7 @@ using Skoven.Settings;
 using Skoven.UI;
 using Skoven.UI.Panels;
 using Skoven.Voice;
+using Skoven.XR;
 
 namespace Skoven.Editor
 {
@@ -134,6 +135,10 @@ namespace Skoven.Editor
 
             var tpd = mainCamGO.AddComponent<TrackedPoseDriver>();
             tpd.SetPoseSource(TrackedPoseDriver.DeviceType.GenericXRDevice, TrackedPoseDriver.TrackedPose.Center);
+
+            // Left & Right Controllers with 6DOF tracking and laser pointer rays
+            GameObject leftCtrlGO = CreateController(cameraOffset.transform, "LeftController", SkovenPointer.HandType.Left);
+            GameObject rightCtrlGO = CreateController(cameraOffset.transform, "RightController", SkovenPointer.HandType.Right);
 
             // 3. Skoven Core Systems
             GameObject coreGO = new GameObject("Skoven Core");
@@ -270,31 +275,124 @@ namespace Skoven.Editor
             s_JetBrainsMono = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Skoven/Fonts/JetBrainsMono-Regular SDF.asset");
         }
 
+        private static GameObject CreateController(Transform parent, string name, SkovenPointer.HandType hand)
+        {
+            GameObject ctrlGO = new GameObject(name);
+            ctrlGO.transform.SetParent(parent, false);
+            ctrlGO.transform.localPosition = (hand == SkovenPointer.HandType.Left) ? new Vector3(-0.25f, 1.25f, 0.35f) : new Vector3(0.25f, 1.25f, 0.35f);
+
+            SkovenPointer pointer = ctrlGO.AddComponent<SkovenPointer>();
+            pointer.hand = hand;
+
+            // LineRenderer laser beam
+            LineRenderer line = ctrlGO.AddComponent<LineRenderer>();
+            line.startWidth = 0.005f;
+            line.endWidth = 0.002f;
+            line.useWorldSpace = true;
+            line.positionCount = 2;
+
+            Material lineMat = new Material(Shader.Find("Sprites/Default"));
+            lineMat.color = new Color(0.25f, 0.75f, 1.0f, 0.65f);
+            line.material = lineMat;
+            pointer.pointerLine = line;
+
+            // Reticle sphere at ray endpoint
+            GameObject reticleGO = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            reticleGO.name = "Reticle";
+            reticleGO.transform.SetParent(ctrlGO.transform, false);
+            reticleGO.transform.localScale = new Vector3(0.015f, 0.015f, 0.015f);
+            Object.DestroyImmediate(reticleGO.GetComponent<Collider>());
+            reticleGO.GetComponent<Renderer>().material = lineMat;
+            reticleGO.SetActive(false);
+            pointer.reticle = reticleGO.transform;
+
+            return ctrlGO;
+        }
+
+        private static Button CreateButton(Transform parent, string name, string label, Vector2 size, Vector2 anchoredPos, Color bgColor, out TextMeshProUGUI btnText, out Image btnImg)
+        {
+            GameObject go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.layer = LayerMask.NameToLayer("UI");
+
+            RectTransform rect = go.AddComponent<RectTransform>();
+            rect.localScale = Vector3.one;
+            rect.sizeDelta = size;
+            rect.anchoredPosition = anchoredPos;
+            rect.localPosition = new Vector3(anchoredPos.x, anchoredPos.y, -1f);
+
+            btnImg = go.AddComponent<Image>();
+            btnImg.color = bgColor;
+
+            Button btn = go.AddComponent<Button>();
+            var colors = btn.colors;
+            colors.highlightedColor = bgColor * 1.25f;
+            colors.pressedColor = bgColor * 0.8f;
+            btn.colors = colors;
+
+            // Box collider for laser pointer physics raycast
+            BoxCollider col = go.AddComponent<BoxCollider>();
+            col.size = new Vector3(size.x, size.y, 15f);
+
+            btnText = CreateTMP(go.transform, "Label", label, 18, size, Vector2.zero, s_InterBold);
+            btnText.alignment = TextAlignmentOptions.Center;
+
+            return btn;
+        }
+
         private static ChatPanel CreateChatPanel(Transform parent, Camera worldCam)
         {
-            GameObject root = CreatePanelRoot<ChatPanel>(parent, "ChatPanel", new Vector3(0f, 0f, 1.4f), new Vector2(800, 550), FloatingPanel.PanelId.Chat, worldCam, Vector3.zero);
+            GameObject root = CreatePanelRoot<ChatPanel>(parent, "ChatPanel", new Vector3(0f, 0f, 1.4f), new Vector2(800, 580), FloatingPanel.PanelId.Chat, worldCam, Vector3.zero);
             ChatPanel panel = root.GetComponent<ChatPanel>();
 
-            panel.chatTextMesh = CreateTMP(root.transform, "ChatText", "<b>Skoven Orchestrator</b>\nReady. Speak or connect companion.", 22, new Vector2(740, 420), new Vector2(0, -30), s_InterRegular, isContentText: true);
-            panel.statusTextMesh = CreateTMP(root.transform, "StatusText", "Online", 18, new Vector2(740, 40), new Vector2(0, 230), s_InterBold);
+            // Header: Title & status
+            panel.statusTextMesh = CreateTMP(root.transform, "StatusText", "<b>Skoven Orchestrator</b>  ·  <color=#88FF88>Online</color>", 20, new Vector2(640, 40), new Vector2(-40, 250), s_InterBold);
 
+            // Voice Indicator Dot
             GameObject voiceInd = new GameObject("VoiceIndicator");
             voiceInd.transform.SetParent(root.transform, false);
-            voiceInd.transform.localPosition = new Vector3(340, 230, 0);
+            voiceInd.transform.localPosition = new Vector3(350, 250, 0);
             voiceInd.layer = LayerMask.NameToLayer("UI");
             Image indImg = voiceInd.AddComponent<Image>();
-            indImg.color = new Color(0.2f, 0.8f, 0.3f, 1f);
+            indImg.color = new Color(0.2f, 0.9f, 0.4f, 1f);
             RectTransform indRect = voiceInd.GetComponent<RectTransform>();
             indRect.localScale = Vector3.one;
-            indRect.sizeDelta = new Vector2(20, 20);
+            indRect.sizeDelta = new Vector2(22, 22);
             panel.voiceIndicator = voiceInd;
+
+            // Instructions banner
+            panel.instructionsText = CreateTMP(root.transform, "Instructions", "<color=#70B5FF><b>Controls:</b></color> Hold <b>[Right Grip]</b> or click <b>[Talk]</b> to speak  ·  Hold <b>[Left Grip]</b> on panel to move  ·  <b>[Trigger]</b> click", 15, new Vector2(740, 32), new Vector2(0, 205), s_InterRegular);
+
+            // Chat conversation stream
+            panel.chatTextMesh = CreateTMP(root.transform, "ChatText", "Ready. Speak your request or connect companion.", 19, new Vector2(740, 300), new Vector2(0, 25), s_InterRegular, isContentText: true);
+
+            // Talk Button
+            Button talkBtn = CreateButton(root.transform, "TalkButton", "🎙️ <b>Push to Talk</b> (or Hold Right Grip)", new Vector2(480, 56), new Vector2(0, -185), new Color(0.18f, 0.52f, 0.88f, 0.95f), out panel.talkButtonText, out panel.talkButtonImage);
+            panel.talkButton = talkBtn;
+
+            // Approval Bar (hidden by default)
+            GameObject approvalBar = new GameObject("ApprovalBar");
+            approvalBar.transform.SetParent(root.transform, false);
+            approvalBar.layer = LayerMask.NameToLayer("UI");
+            RectTransform appRect = approvalBar.AddComponent<RectTransform>();
+            appRect.localScale = Vector3.one;
+            appRect.sizeDelta = new Vector2(740, 60);
+            appRect.anchoredPosition = new Vector2(0, -245);
+
+            panel.approvalPromptText = CreateTMP(approvalBar.transform, "PromptText", "Approve proposed action?", 18, new Vector2(360, 40), new Vector2(-170, 0), s_InterBold);
+            panel.approveButton = CreateButton(approvalBar.transform, "ApproveBtn", "✓ Approve", new Vector2(160, 46), new Vector2(100, 0), new Color(0.2f, 0.75f, 0.35f, 0.95f), out _, out _);
+            panel.rejectButton = CreateButton(approvalBar.transform, "RejectBtn", "✗ Reject", new Vector2(160, 46), new Vector2(275, 0), new Color(0.85f, 0.25f, 0.25f, 0.95f), out _, out _);
+
+            approvalBar.SetActive(false);
+            panel.approvalBar = approvalBar;
 
             return panel;
         }
 
         private static DiffPanel CreateDiffPanel(Transform parent, Camera worldCam)
         {
-            GameObject root = CreatePanelRoot<DiffPanel>(parent, "DiffPanel", new Vector3(-1.15f, 0f, 1.3f), new Vector2(900, 600), FloatingPanel.PanelId.Diff, worldCam, new Vector3(0f, 25f, 0f));
+            // Angled inward at -25° yaw to face the user
+            GameObject root = CreatePanelRoot<DiffPanel>(parent, "DiffPanel", new Vector3(-1.15f, 0f, 1.3f), new Vector2(900, 600), FloatingPanel.PanelId.Diff, worldCam, new Vector3(0f, -25f, 0f));
             DiffPanel panel = root.GetComponent<DiffPanel>();
 
             panel.summaryTextMesh = CreateTMP(root.transform, "SummaryText", "Diff Viewer - No active diffs", 20, new Vector2(840, 40), new Vector2(0, 250), s_InterBold);
@@ -317,7 +415,8 @@ namespace Skoven.Editor
 
         private static AgentLogPanel CreateAgentLogPanel(Transform parent, Camera worldCam)
         {
-            GameObject root = CreatePanelRoot<AgentLogPanel>(parent, "AgentLogPanel", new Vector3(1.15f, 0f, 1.3f), new Vector2(800, 550), FloatingPanel.PanelId.AgentLog, worldCam, new Vector3(0f, -25f, 0f));
+            // Angled inward at +25° yaw to face the user
+            GameObject root = CreatePanelRoot<AgentLogPanel>(parent, "AgentLogPanel", new Vector3(1.15f, 0f, 1.3f), new Vector2(800, 550), FloatingPanel.PanelId.AgentLog, worldCam, new Vector3(0f, 25f, 0f));
             AgentLogPanel panel = root.GetComponent<AgentLogPanel>();
 
             panel.logTextMesh = CreateTMP(root.transform, "LogText", "Agent Log - Waiting for activity...", 18, new Vector2(740, 480), new Vector2(0, 0), s_JetBrainsMono, isContentText: true);

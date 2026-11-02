@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using Skoven.Network;
 
 namespace Skoven.UI.Panels
@@ -14,9 +15,15 @@ namespace Skoven.UI.Panels
         [Header("UI References")]
         public TextMeshProUGUI chatTextMesh;
         public TextMeshProUGUI statusTextMesh;
+        public TextMeshProUGUI instructionsText;
         public GameObject voiceIndicator; // pulsing indicator when recording
+        public Button talkButton;
+        public Image talkButtonImage;
+        public TextMeshProUGUI talkButtonText;
         public GameObject approvalBar;    // shown when awaiting approval
         public TextMeshProUGUI approvalPromptText;
+        public Button approveButton;
+        public Button rejectButton;
 
         [Header("Settings")]
         public int maxMessages = 50;
@@ -26,7 +33,44 @@ namespace Skoven.UI.Panels
 
         private readonly List<string> _lines = new();
 
+        protected override void Awake()
+        {
+            base.Awake();
+            if (talkButton != null)
+                talkButton.onClick.AddListener(ToggleVoiceCapture);
+            if (approveButton != null)
+                approveButton.onClick.AddListener(OnApproveClicked);
+            if (rejectButton != null)
+                rejectButton.onClick.AddListener(OnRejectClicked);
+        }
+
         // ── Public API ─────────────────────────────────────────────────────
+
+        public void ToggleVoiceCapture()
+        {
+            var vc = FindFirstObjectByType<Voice.VoiceCapture>();
+            if (vc != null)
+            {
+                if (vc.IsRecording)
+                    vc.StopCapture();
+                else
+                    vc.StartCapture();
+            }
+        }
+
+        public void OnApproveClicked()
+        {
+            var ctrl = FindFirstObjectByType<Voice.VoiceInputController>();
+            ctrl?.SendApproval(true);
+            HideApprovalBar();
+        }
+
+        public void OnRejectClicked()
+        {
+            var ctrl = FindFirstObjectByType<Voice.VoiceInputController>();
+            ctrl?.SendApproval(false);
+            HideApprovalBar();
+        }
 
         /// Called when the companion app echoes a recognized transcript back
         public void OnTranscriptAck(TranscriptAckMessage msg)
@@ -106,6 +150,20 @@ namespace Skoven.UI.Panels
         {
             if (voiceIndicator != null)
                 voiceIndicator.SetActive(active);
+
+            if (talkButtonText != null)
+            {
+                talkButtonText.text = active
+                    ? "🔴 <b>Listening...</b> (Release Grip or Click to Stop)"
+                    : "🎙️ <b>Push to Talk</b> (or Hold Right Grip)";
+            }
+
+            if (talkButtonImage != null)
+            {
+                talkButtonImage.color = active
+                    ? new Color(0.85f, 0.22f, 0.22f, 0.95f)
+                    : new Color(0.18f, 0.52f, 0.88f, 0.95f);
+            }
         }
 
         // ── Internal helpers ───────────────────────────────────────────────
