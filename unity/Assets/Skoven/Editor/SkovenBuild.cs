@@ -76,6 +76,12 @@ public static class SkovenBuild
         PlayerSettings.Android.forceInternetPermission = true;
         PlayerSettings.Android.useCustomKeystore       = false;
 
+        Texture2D appIcon = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Skoven/Art/Store/app_icon_512x512.png");
+        if (appIcon != null)
+        {
+            PlayerSettings.SetIcons(UnityEditor.Build.NamedBuildTarget.Android, new[] { appIcon }, IconKind.Any);
+        }
+
         Debug.Log($"[SkovenBuild] App ID: {AppId} | Package: {PackageName}");
 
         string parentDir = Path.GetDirectoryName(outputPath);

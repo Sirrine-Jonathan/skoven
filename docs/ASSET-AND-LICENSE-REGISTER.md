@@ -1,28 +1,41 @@
 # Skoven — Asset and License Register
 
-_Last updated: 2026-10-31_
-_Status: Pre-production — no assets selected or imported yet_
+_Last updated: 2026-11-02_
+_Status: Production assets imported and active_
 
 All assets used in a Store release must have an entry here with confirmed license status. Do not import or ship an asset without recording its provenance.
 
-Skoven is a productivity tool with minimal art requirements. The asset surface is intentionally small: a few static environments, UI chrome, and fonts. Prioritize clean licensing over visual complexity.
+Skoven is a productivity tool with minimal art requirements. The asset surface is intentionally focused: high-legibility monospace and UI typography, dark ambient AR/VR spatial backgrounds, and Meta Horizon Store listing assets.
 
 ---
 
-## Font candidates
+## Font assets (Active in project)
 
-Fonts are the highest-priority asset decision — code legibility depends on the choice.
+| Font | Source | Version / Hash | License | Usage in Skoven | Status |
+|---|---|---|---|---|---|
+| [JetBrains Mono](https://www.jetbrains.com/lp/mono/) | JetBrains | v2.304 | OFL 1.1 | Code diff viewer (`DiffPanel`), interactive terminal (`TerminalPanel`), and live agent activity streams (`AgentLogPanel`). Generated as dynamic SDF TMP font asset. | **Active** (`Assets/Skoven/Fonts/JetBrainsMono-*`) |
+| [Inter](https://rsms.me/inter/) | Rasmus Andersson | v4.1 | OFL 1.1 | UI chrome, titles, panel headers, orchestrator chat stream (`ChatPanel`), and task board items (`TaskBoardPanel`). Generated as dynamic SDF TMP font asset. | **Active** (`Assets/Skoven/Fonts/Inter-*`) |
 
-| Font | Source | License | Notes |
-|---|---|---|---|
-| [JetBrains Mono](https://www.jetbrains.com/lp/mono/) | JetBrains | OFL 1.1 | Purpose-built for code; excellent legibility; free for all use |
-| [Fira Code](https://github.com/tonsky/FiraCode) | Nikita Prokopov | OFL 1.1 | Wide adoption; ligature support; free for all use |
-| [OpenDyslexic](https://opendyslexic.org) | Abbie Gonzalez | OFL 1.1 | Accessibility option; required for dyslexia-friendly setting |
-| [Inter](https://rsms.me/inter/) | Rasmus Andersson | OFL 1.1 | UI chrome, labels, non-code text |
+OFL 1.1 permits commercial and embedded application bundling. No per-seat royalties or fees required.
 
-OFL 1.1 permits use in commercial applications including embedded/bundled use. No per-seat fees. Attribution in credits recommended but not legally required by OFL.
+---
 
-**Action:** Confirm OFL 1.1 is compatible with Meta Horizon Store distribution terms before Stage 5.
+## Store Listing & Brand Assets (Active in project)
+
+Authored specifically for Skoven via automated pipeline [`tools/generate_brand_art.py`](../tools/generate_brand_art.py). All assets strictly adhere to Meta Horizon Store Developer Dashboard specifications and VRC asset rules.
+
+| Asset | Dimensions | Format | Parallax / Safe Area Spec | Location |
+|---|---|---|---|---|
+| **Spatial Tile 512 Background** | `512 × 512 px` | Solid `RGB` PNG | Opaque background layer (no alpha) | `store_listing/assets/`, `Assets/Skoven/Art/Store/` |
+| **Spatial Tile 512 Foreground** | `512 × 512 px` | `RGBA` PNG | Transparent background; non-transparent pixels strictly inside centered `392 × 392 px` (`60 px` margin) | `store_listing/assets/`, `Assets/Skoven/Art/Store/` |
+| **Spatial Tile 180 Background** | `180 × 180 px` | Solid `RGB` PNG | Opaque background layer | `store_listing/assets/`, `Assets/Skoven/Art/Store/` |
+| **Spatial Tile 180 Foreground** | `180 × 180 px` | `RGBA` PNG | Transparent background; non-transparent pixels strictly inside centered `138 × 138 px` (`21 px` margin) | `store_listing/assets/`, `Assets/Skoven/Art/Store/` |
+| **Landscape Cover** | `2560 × 1440 px` | `RGB` PNG | 16:9 Landscape Store Cover | `store_listing/assets/`, `Assets/Skoven/Art/Store/` |
+| **Hero Cover** | `3000 × 900 px` | `RGB` PNG | Panoramic banner | `store_listing/assets/`, `Assets/Skoven/Art/Store/` |
+| **Square Cover** | `1440 × 1440 px` | `RGB` PNG | 1:1 Square Cover | `store_listing/assets/`, `Assets/Skoven/Art/Store/` |
+| **Portrait Cover** | `1008 × 1440 px` | `RGB` PNG | 7:10 Portrait Cover | `store_listing/assets/`, `Assets/Skoven/Art/Store/` |
+| **Mini Landscape** | `1080 × 360 px` | `RGB` PNG | 3:1 Small Banner | `store_listing/assets/`, `Assets/Skoven/Art/Store/` |
+| **App Icon** | `512 × 512 px` | `RGB` PNG | Standard 2D App Icon for Android/Quest launcher | `store_listing/assets/`, `Assets/Skoven/Art/Store/` |
 
 ---
 

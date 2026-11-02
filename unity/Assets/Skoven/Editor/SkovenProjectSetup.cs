@@ -145,6 +145,9 @@ namespace Skoven.Editor
             bootstrap.wsClient = wsClient;
             bootstrap.voiceCapture = voiceCapture;
 
+            // Load custom UI and monospace code fonts
+            LoadFonts();
+
             // 4. Floating Workspace Panels (Centered at comfortable eye-level ~1.35m)
             GameObject panelsRoot = new GameObject("Panels");
             panelsRoot.transform.position = new Vector3(0f, 1.35f, 0f);
@@ -232,13 +235,24 @@ namespace Skoven.Editor
             return root;
         }
 
+        private static TMP_FontAsset s_InterRegular;
+        private static TMP_FontAsset s_InterBold;
+        private static TMP_FontAsset s_JetBrainsMono;
+
+        private static void LoadFonts()
+        {
+            s_InterRegular = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Skoven/Fonts/Inter-Regular SDF.asset");
+            s_InterBold = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Skoven/Fonts/Inter-Bold SDF.asset");
+            s_JetBrainsMono = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/Skoven/Fonts/JetBrainsMono-Regular SDF.asset");
+        }
+
         private static ChatPanel CreateChatPanel(Transform parent)
         {
             GameObject root = CreatePanelRoot<ChatPanel>(parent, "ChatPanel", new Vector3(0f, 0f, 1.5f), new Vector2(800, 550), FloatingPanel.PanelId.Chat);
             ChatPanel panel = root.GetComponent<ChatPanel>();
 
-            panel.chatTextMesh = CreateTMP(root.transform, "ChatText", "<b>Skoven Orchestrator</b>\nReady. Speak or connect companion.", 22, new Vector2(740, 420), new Vector2(0, -30));
-            panel.statusTextMesh = CreateTMP(root.transform, "StatusText", "Online", 18, new Vector2(740, 40), new Vector2(0, 230));
+            panel.chatTextMesh = CreateTMP(root.transform, "ChatText", "<b>Skoven Orchestrator</b>\nReady. Speak or connect companion.", 22, new Vector2(740, 420), new Vector2(0, -30), s_InterRegular);
+            panel.statusTextMesh = CreateTMP(root.transform, "StatusText", "Online", 18, new Vector2(740, 40), new Vector2(0, 230), s_InterBold);
 
             GameObject voiceInd = new GameObject("VoiceIndicator");
             voiceInd.transform.SetParent(root.transform);
@@ -257,8 +271,8 @@ namespace Skoven.Editor
             root.transform.localRotation = Quaternion.Euler(0f, 20f, 0f);
             DiffPanel panel = root.GetComponent<DiffPanel>();
 
-            panel.summaryTextMesh = CreateTMP(root.transform, "SummaryText", "Diff Viewer - No active diffs", 20, new Vector2(840, 40), new Vector2(0, 250));
-            panel.diffTextMesh = CreateTMP(root.transform, "DiffText", "No diff loaded.", 18, new Vector2(840, 480), new Vector2(0, -30));
+            panel.summaryTextMesh = CreateTMP(root.transform, "SummaryText", "Diff Viewer - No active diffs", 20, new Vector2(840, 40), new Vector2(0, 250), s_InterBold);
+            panel.diffTextMesh = CreateTMP(root.transform, "DiffText", "No diff loaded.", 18, new Vector2(840, 480), new Vector2(0, -30), s_JetBrainsMono);
 
             return panel;
         }
@@ -268,9 +282,9 @@ namespace Skoven.Editor
             GameObject root = CreatePanelRoot<TaskBoardPanel>(parent, "TaskBoardPanel", new Vector3(0f, 0.55f, 1.5f), new Vector2(800, 320), FloatingPanel.PanelId.TaskBoard);
             TaskBoardPanel panel = root.GetComponent<TaskBoardPanel>();
 
-            panel.taskTitleText = CreateTMP(root.transform, "TaskTitle", "Task Board", 24, new Vector2(740, 50), new Vector2(0, 110));
-            panel.currentStageText = CreateTMP(root.transform, "CurrentStage", "Stage: Idle", 20, new Vector2(740, 40), new Vector2(0, 50));
-            panel.stepsText = CreateTMP(root.transform, "StepsText", "Awaiting task...", 18, new Vector2(740, 120), new Vector2(0, -50));
+            panel.taskTitleText = CreateTMP(root.transform, "TaskTitle", "Task Board", 24, new Vector2(740, 50), new Vector2(0, 110), s_InterBold);
+            panel.currentStageText = CreateTMP(root.transform, "CurrentStage", "Stage: Idle", 20, new Vector2(740, 40), new Vector2(0, 50), s_InterRegular);
+            panel.stepsText = CreateTMP(root.transform, "StepsText", "Awaiting task...", 18, new Vector2(740, 120), new Vector2(0, -50), s_InterRegular);
 
             return panel;
         }
@@ -281,7 +295,7 @@ namespace Skoven.Editor
             root.transform.localRotation = Quaternion.Euler(0f, -20f, 0f);
             AgentLogPanel panel = root.GetComponent<AgentLogPanel>();
 
-            panel.logTextMesh = CreateTMP(root.transform, "LogText", "Agent Log - Waiting for activity...", 18, new Vector2(740, 480), new Vector2(0, 0));
+            panel.logTextMesh = CreateTMP(root.transform, "LogText", "Agent Log - Waiting for activity...", 18, new Vector2(740, 480), new Vector2(0, 0), s_JetBrainsMono);
 
             return panel;
         }
@@ -291,18 +305,21 @@ namespace Skoven.Editor
             GameObject root = CreatePanelRoot<TerminalPanel>(parent, "TerminalPanel", new Vector3(0f, -0.55f, 1.5f), new Vector2(800, 320), FloatingPanel.PanelId.Terminal);
             TerminalPanel panel = root.GetComponent<TerminalPanel>();
 
-            panel.outputTextMesh = CreateTMP(root.transform, "OutputText", "Terminal: Idle", 18, new Vector2(740, 260), new Vector2(0, 0));
+            panel.outputTextMesh = CreateTMP(root.transform, "OutputText", "Terminal: Idle", 18, new Vector2(740, 260), new Vector2(0, 0), s_JetBrainsMono);
 
             return panel;
         }
 
-        private static TextMeshProUGUI CreateTMP(Transform parent, string name, string text, float fontSize, Vector2 size, Vector2 anchoredPos)
+        private static TextMeshProUGUI CreateTMP(Transform parent, string name, string text, float fontSize, Vector2 size, Vector2 anchoredPos, TMP_FontAsset font = null)
         {
             GameObject go = new GameObject(name);
             go.transform.SetParent(parent);
             go.layer = LayerMask.NameToLayer("UI");
 
             TextMeshProUGUI tmp = go.AddComponent<TextMeshProUGUI>();
+            if (font != null)
+                tmp.font = font;
+
             tmp.text = text;
             tmp.fontSize = fontSize;
             tmp.color = Color.white;
