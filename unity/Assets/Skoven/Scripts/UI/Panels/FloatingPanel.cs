@@ -22,7 +22,7 @@ namespace Skoven.UI.Panels
         [Header("Default Transform")]
         public Vector3 defaultLocalPosition = new(0f, 0f, 1.5f);
         public Vector3 defaultLocalEuler = Vector3.zero;
-        public Vector3 defaultScale = Vector3.one;
+        public Vector3 defaultScale = new(0.0015f, 0.0015f, 0.0015f);
 
         [Header("Constraints")]
         [Tooltip("Minimum distance from origin (prevents panels behind the player).")]
@@ -38,6 +38,14 @@ namespace Skoven.UI.Panels
 
         protected virtual void Awake()
         {
+            // Ensure panel does not drop to the floor under gravity
+            var rb = GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.useGravity = false;
+                rb.isKinematic = true;
+            }
+
             // Find the XR rig origin
             var rig = FindFirstObjectByType<Unity.XR.CoreUtils.XROrigin>();
             _origin = rig != null ? rig.transform : transform.parent;
@@ -79,10 +87,10 @@ namespace Skoven.UI.Panels
 
         // ── Layout persistence ─────────────────────────────────────────────
 
-        private string PositionKey => $"skoven.panel.{panelId}.pos";
-        private string RotationKey => $"skoven.panel.{panelId}.rot";
-        private string ScaleKey    => $"skoven.panel.{panelId}.scale";
-        private string VisibleKey  => $"skoven.panel.{panelId}.visible";
+        private string PositionKey => $"skoven.panel.v2.{panelId}.pos";
+        private string RotationKey => $"skoven.panel.v2.{panelId}.rot";
+        private string ScaleKey    => $"skoven.panel.v2.{panelId}.scale";
+        private string VisibleKey  => $"skoven.panel.v2.{panelId}.visible";
 
         public void SaveLayout()
         {
@@ -129,6 +137,12 @@ namespace Skoven.UI.Panels
                 PlayerPrefs.GetFloat(ScaleKey + "z")
             );
 
+            // Safety check against zero, corrupted, or giant legacy scales
+            if (scale.sqrMagnitude < 0.0000001f || scale.x > 0.05f)
+            {
+                scale = defaultScale;
+            }
+
             transform.SetPositionAndRotation(pos, rot);
             transform.localScale = scale;
 
@@ -138,7 +152,12 @@ namespace Skoven.UI.Panels
 
         public void ResetToDefault()
         {
-            if (_origin != null)
+            if (transform.parent != null)
+            {
+                transform.localPosition = defaultLocalPosition;
+                transform.localEulerAngles = defaultLocalEuler;
+            }
+            else if (_origin != null)
             {
                 transform.position = _origin.TransformPoint(defaultLocalPosition);
                 transform.rotation = _origin.rotation * Quaternion.Euler(defaultLocalEuler);
