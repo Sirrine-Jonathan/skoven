@@ -27,6 +27,7 @@
         <meta-data android:name="com.oculus.supportedDevices" android:value="quest2|questpro|quest3|quest3s" tools:replace="android:value" />
         <meta-data android:name="com.oculus.intent.category.VR" android:value="vr_only" />
         <meta-data android:name="com.oculus.vr.focusaware" android:value="true" tools:replace="android:value" />
+        <meta-data android:name="com.oculus.ossplash.background" android:value="passthrough-contextual" tools:replace="android:value" />
         <meta-data android:name="com.oculus.handtracking.frequency" android:value="HIGH" />
         <meta-data android:name="com.oculus.handtracking.version" android:value="V2.0" />
 
@@ -38,7 +39,7 @@
             android:launchMode="singleTask"
             android:resizeableActivity="false"
             android:exported="true"
-            tools:replace="android:theme,android:resizeableActivity">
+            tools:replace="android:theme,android:resizeableActivity,android:screenOrientation">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

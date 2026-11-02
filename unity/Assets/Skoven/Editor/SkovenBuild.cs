@@ -47,14 +47,10 @@ public static class SkovenBuild
         outputPath = Path.GetFullPath(outputPath);
         Debug.Log($"=== Starting Skoven Meta Quest Build (v{VersionString} code {VersionCode}, options: {buildOptions}) → {outputPath} ===");
 
-        // 1. Ensure OpenXR is configured and scene exists
+        // 1. Ensure OpenXR is configured and assemble fresh scene
         SkovenProjectSetup.ConfigureOpenXR();
-
-        if (!File.Exists(SkovenProjectSetup.ScenePath))
-        {
-            Debug.Log("[SkovenBuild] Scene file not found. Generating fresh scene...");
-            SkovenProjectSetup.BuildScene();
-        }
+        Debug.Log("[SkovenBuild] Rebuilding Skoven main scene to ensure latest XR & AR camera configuration...");
+        SkovenProjectSetup.BuildScene();
 
         // 2. Configure target
         EditorUserBuildSettings.selectedBuildTargetGroup = BuildTargetGroup.Android;
@@ -62,6 +58,7 @@ public static class SkovenBuild
         EditorUserBuildSettings.buildAppBundle = buildAppBundle;
 
         // 3. Configure Player Settings for Quest 3
+        PlayerSettings.defaultInterfaceOrientation     = UIOrientation.LandscapeLeft;
         PlayerSettings.companyName                     = "Sirrine-Jonathan";
         PlayerSettings.productName                     = ProductName;
         PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, PackageName);

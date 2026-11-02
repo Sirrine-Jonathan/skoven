@@ -136,7 +136,17 @@ namespace Skoven.Settings
                 foreach (var t in texts)
                 {
                     // Only override code/content text, not labels (which have fixed sizes)
-                    if (t.CompareTag("PanelContentText"))
+                    bool isContent = false;
+                    try
+                    {
+                        isContent = t.CompareTag("PanelContentText");
+                    }
+                    catch
+                    {
+                        isContent = false;
+                    }
+
+                    if (isContent)
                         t.fontSize = size;
 
                     if (DyslexiaFontEnabled && dyslexiaFont != null)
