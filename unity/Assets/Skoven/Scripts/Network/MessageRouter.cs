@@ -35,7 +35,27 @@ namespace Skoven.Network
             if (wsClient == null)
                 wsClient = FindFirstObjectByType<WebSocketClient>();
 
-            wsClient.OnMessageReceived += Route;
+            if (wsClient != null)
+                wsClient.OnMessageReceived += Route;
+            else
+                Debug.LogWarning("[MessageRouter] WebSocketClient not found in Awake; will retry in Start.");
+        }
+
+        private void Start()
+        {
+            if (wsClient == null)
+            {
+                wsClient = FindFirstObjectByType<WebSocketClient>();
+                if (wsClient != null)
+                {
+                    wsClient.OnMessageReceived -= Route;
+                    wsClient.OnMessageReceived += Route;
+                }
+                else
+                {
+                    Debug.LogError("[MessageRouter] WebSocketClient not found in scene. Message routing will not function.");
+                }
+            }
         }
 
         private void OnDestroy()

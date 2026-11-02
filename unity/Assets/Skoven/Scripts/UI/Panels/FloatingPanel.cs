@@ -41,6 +41,15 @@ namespace Skoven.UI.Panels
             // Find the XR rig origin
             var rig = FindFirstObjectByType<Unity.XR.CoreUtils.XROrigin>();
             _origin = rig != null ? rig.transform : transform.parent;
+        }
+
+        protected virtual void Start()
+        {
+            if (_origin == null)
+            {
+                var rig = FindFirstObjectByType<Unity.XR.CoreUtils.XROrigin>();
+                _origin = rig != null ? rig.transform : transform.parent;
+            }
 
             LoadLayout();
         }

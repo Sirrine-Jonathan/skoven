@@ -31,8 +31,8 @@ public static class SkovenBuild
     [MenuItem("Skoven/Build Development APK")]
     public static void BuildDevelopmentApk()
     {
-        string outputPath = GetArg("-customBuildPath") ?? "Builds/Skoven.apk";
-        BuildInternal(outputPath, buildAppBundle: false);
+        string outputPath = GetArg("-customBuildPath") ?? "Builds/Skoven-Dev.apk";
+        BuildInternal(outputPath, buildAppBundle: false, BuildOptions.Development | BuildOptions.AllowDebugging);
     }
 
     [MenuItem("Skoven/Build Meta Quest AAB (Store Bundle)")]
@@ -42,10 +42,10 @@ public static class SkovenBuild
         BuildInternal(outputPath, buildAppBundle: true);
     }
 
-    private static void BuildInternal(string outputPath, bool buildAppBundle)
+    private static void BuildInternal(string outputPath, bool buildAppBundle, BuildOptions buildOptions = BuildOptions.None)
     {
         outputPath = Path.GetFullPath(outputPath);
-        Debug.Log($"=== Starting Skoven Meta Quest Build (v{VersionString} code {VersionCode}) → {outputPath} ===");
+        Debug.Log($"=== Starting Skoven Meta Quest Build (v{VersionString} code {VersionCode}, options: {buildOptions}) → {outputPath} ===");
 
         // 1. Ensure OpenXR is configured and scene exists
         SkovenProjectSetup.ConfigureOpenXR();
@@ -89,7 +89,7 @@ public static class SkovenBuild
             scenes           = new[] { SkovenProjectSetup.ScenePath },
             locationPathName = outputPath,
             target           = BuildTarget.Android,
-            options          = BuildOptions.None
+            options          = buildOptions
         };
 
         Debug.Log($"[SkovenBuild] Invoking BuildPipeline.BuildPlayer...");
