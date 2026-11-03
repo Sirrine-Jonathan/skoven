@@ -17,25 +17,45 @@ namespace Skoven.Network
 
         // ── Events — subscribe in the Inspector or from other components ──
 
-        public UnityEvent<HandshakeAckMessage> onHandshakeAck;
-        public UnityEvent<TranscriptAckMessage> onTranscriptAck;
-        public UnityEvent<AgentUpdateMessage> onAgentUpdate;
-        public UnityEvent<PlanReadyMessage> onPlanReady;
-        public UnityEvent<DiffReadyMessage> onDiffReady;
-        public UnityEvent<VerifyResultMessage> onVerifyResult;
-        public UnityEvent<CommitReadyMessage> onCommitReady;
-        public UnityEvent<PrReadyMessage> onPrReady;
-        public UnityEvent<AgentCompleteMessage> onAgentComplete;
-        public UnityEvent<AgentErrorMessage> onAgentError;
-        public UnityEvent<SessionStateMessage> onSessionState;
-        public UnityEvent<SpeechMessage> onSpeech;
+        public UnityEvent<HandshakeAckMessage> onHandshakeAck = new();
+        public UnityEvent<TranscriptAckMessage> onTranscriptAck = new();
+        public UnityEvent<AgentUpdateMessage> onAgentUpdate = new();
+        public UnityEvent<PlanReadyMessage> onPlanReady = new();
+        public UnityEvent<DiffReadyMessage> onDiffReady = new();
+        public UnityEvent<VerifyResultMessage> onVerifyResult = new();
+        public UnityEvent<CommitReadyMessage> onCommitReady = new();
+        public UnityEvent<PrReadyMessage> onPrReady = new();
+        public UnityEvent<AgentCompleteMessage> onAgentComplete = new();
+        public UnityEvent<AgentErrorMessage> onAgentError = new();
+        public UnityEvent<SessionStateMessage> onSessionState = new();
+        public UnityEvent<SpeechMessage> onSpeech = new();
 
         private void Awake()
         {
             if (wsClient == null)
                 wsClient = FindFirstObjectByType<WebSocketClient>();
 
-            wsClient.OnMessageReceived += Route;
+            if (wsClient != null)
+                wsClient.OnMessageReceived += Route;
+            else
+                Debug.LogWarning("[MessageRouter] WebSocketClient not found in Awake; will retry in Start.");
+        }
+
+        private void Start()
+        {
+            if (wsClient == null)
+            {
+                wsClient = FindFirstObjectByType<WebSocketClient>();
+                if (wsClient != null)
+                {
+                    wsClient.OnMessageReceived -= Route;
+                    wsClient.OnMessageReceived += Route;
+                }
+                else
+                {
+                    Debug.LogError("[MessageRouter] WebSocketClient not found in scene. Message routing will not function.");
+                }
+            }
         }
 
         private void OnDestroy()

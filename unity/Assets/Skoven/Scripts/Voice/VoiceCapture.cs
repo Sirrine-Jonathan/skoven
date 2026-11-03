@@ -40,14 +40,26 @@ namespace Skoven.Voice
 
         private void Start()
         {
-            // Select the first available mic device
-            if (Microphone.devices.Length == 0)
+#if UNITY_ANDROID && !UNITY_EDITOR
+            if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.Microphone))
             {
-                Debug.LogError("[Skoven] No microphone devices found.");
-                return;
+                UnityEngine.Android.Permission.RequestUserPermission(UnityEngine.Android.Permission.Microphone);
             }
-            _deviceName = Microphone.devices[0];
-            Debug.Log($"[Skoven] Using microphone: {_deviceName}");
+#endif
+            InitMicrophone();
+        }
+
+        private void InitMicrophone()
+        {
+            if (Microphone.devices.Length > 0)
+            {
+                _deviceName = Microphone.devices[0];
+                Debug.Log($"[Skoven] Using microphone: {_deviceName}");
+            }
+            else
+            {
+                Debug.LogWarning("[Skoven] No microphone devices currently enumerated.");
+            }
         }
 
         private void OnDestroy()
@@ -62,7 +74,17 @@ namespace Skoven.Voice
         /// </summary>
         public void StartCapture()
         {
-            if (_isRecording || string.IsNullOrEmpty(_deviceName)) return;
+            if (_isRecording) return;
+
+            if (string.IsNullOrEmpty(_deviceName))
+            {
+                InitMicrophone();
+                if (string.IsNullOrEmpty(_deviceName))
+                {
+                    Debug.LogWarning("[Skoven] Cannot start capture: no microphone available.");
+                    return;
+                }
+            }
 
             // Record into a looping 10-second clip; we stream chunks in real time
             _mic = Microphone.Start(_deviceName, loop: true, lengthSec: 10, frequency: sampleRate);

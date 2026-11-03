@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Text;
@@ -16,7 +17,7 @@ namespace Skoven.Network
     {
         [Header("Connection")]
         [Tooltip("IP address of the machine running the companion app.")]
-        public string hostAddress = "192.168.1.100";
+        public string hostAddress = "127.0.0.1";
         public int port = 8765;
         public float reconnectDelaySec = 3f;
 
@@ -61,40 +62,56 @@ namespace Skoven.Network
             if (_reconnecting) return;
             _reconnecting = true;
 
+            var candidateHosts = new List<string> { "127.0.0.1" };
+            if (!string.IsNullOrEmpty(hostAddress) && !candidateHosts.Contains(hostAddress))
+                candidateHosts.Add(hostAddress);
+            if (!candidateHosts.Contains("192.168.1.119"))
+                candidateHosts.Add("192.168.1.119");
+
             while (true)
             {
-                _cts?.Cancel();
-                _cts?.Dispose();
-                _cts = new CancellationTokenSource();
-
-                _ws?.Dispose();
-                _ws = new ClientWebSocket();
-
-                try
+                foreach (var host in candidateHosts)
                 {
-                    var uri = new Uri($"ws://{hostAddress}:{port}");
-                    Debug.Log($"[Skoven] Connecting to {uri}...");
-                    await _ws.ConnectAsync(uri, _cts.Token);
-                    Debug.Log("[Skoven] Connected to companion app.");
-                    _reconnecting = false;
-                    _incomingQueue.Enqueue("{\"_meta\":\"connected\"}");
-                    OnConnected?.Invoke();
+                    _cts?.Cancel();
+                    _cts?.Dispose();
+                    _cts = new CancellationTokenSource();
 
-                    // Start send/receive loops concurrently
-                    var recvTask = ReceiveLoopAsync(_cts.Token);
-                    var sendTask = SendLoopAsync(_cts.Token);
-                    await Task.WhenAny(recvTask, sendTask);
+                    _ws?.Dispose();
+                    _ws = new ClientWebSocket();
 
-                    OnDisconnected?.Invoke();
-                    Debug.Log("[Skoven] Disconnected from companion app.");
-                }
-                catch (OperationCanceledException)
-                {
-                    return; // App is shutting down
-                }
-                catch (Exception ex)
-                {
-                    Debug.LogWarning($"[Skoven] Connection failed: {ex.Message}. Retrying in {reconnectDelaySec}s...");
+                    try
+                    {
+                        var uri = new Uri($"ws://{host}:{port}");
+                        Debug.Log($"[Skoven] Attempting connection to {uri}...");
+
+                        using (var connectCts = CancellationTokenSource.CreateLinkedTokenSource(_cts.Token))
+                        {
+                            connectCts.CancelAfter(TimeSpan.FromSeconds(2.5));
+                            await _ws.ConnectAsync(uri, connectCts.Token);
+                        }
+
+                        Debug.Log($"[Skoven] Connected successfully to {uri}");
+                        _reconnecting = false;
+                        _incomingQueue.Enqueue("{\"_meta\":\"connected\"}");
+                        OnConnected?.Invoke();
+
+                        // Start send/receive loops concurrently
+                        var recvTask = ReceiveLoopAsync(_cts.Token);
+                        var sendTask = SendLoopAsync(_cts.Token);
+                        await Task.WhenAny(recvTask, sendTask);
+
+                        OnDisconnected?.Invoke();
+                        Debug.Log("[Skoven] Disconnected from companion app.");
+                        break; // exit candidate loop and retry after delay
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        if (_cts.IsCancellationRequested) return; // App shutting down
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogWarning($"[Skoven] Connect to {host}:{port} failed: {ex.Message}");
+                    }
                 }
 
                 _reconnecting = true;

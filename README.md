@@ -37,15 +37,32 @@ skoven/
 
 ---
 
-## Quick start (companion app)
+## Quick start
+
+### 1. Start the Companion App (Host Machine)
 
 ```bash
 cd skoven/companion
 cp .env.example .env
-# Add your LLM API key (OpenAI, Anthropic, OpenRouter, Ollama, or custom)
+# Add your LLM API key (OpenAI, Anthropic, OpenRouter, Ollama, or custom) in .env
 npm install
 npm run dev
 ```
+
+### 2. Forward WebSocket over USB (Zero-Config)
+
+With your Quest 3 connected via USB debugging:
+```bash
+adb reverse tcp:8765 tcp:8765
+```
+
+### 3. Put on Headset & Interact
+
+| Action | Control |
+|---|---|
+| **Speak to Orchestrator** | Hold **Right Controller Grip** or click **[🎙️ Push to Talk]** |
+| **Move / Reposition Panels** | Point laser ray with **Left Hand** and hold **Left Grip** to grab, move, and rotate; release to save |
+| **Click Buttons / Approvals** | Point laser ray and pull **Trigger** (or tap **A / X**) |
 
 Full setup at [`docs/DEV-SETUP.md`](docs/DEV-SETUP.md).
 

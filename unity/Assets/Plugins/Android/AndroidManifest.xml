@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.sirrine.skoven">
+
+    <uses-feature android:name="android.hardware.vr.headtracking" android:required="true" android:version="1" tools:replace="android:required,android:version" />
+    <uses-feature android:glEsVersion="0x00030000" />
+    
+    <!-- Meta Quest Mixed Reality & Passthrough Features -->
+    <uses-feature android:name="com.oculus.feature.PASSTHROUGH" android:required="true" />
+    <uses-permission android:name="com.oculus.permission.USE_SCENE" />
+
+    <!-- Hands & Controllers -->
+    <uses-feature android:name="oculus.software.handtracking" android:required="false" />
+    <uses-permission android:name="com.oculus.permission.HAND_TRACKING" />
+
+    <!-- Voice capture & networking -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@mipmap/app_icon"
+        android:allowBackup="false">
+
+        <meta-data android:name="com.oculus.supportedDevices" android:value="quest2|questpro|quest3|quest3s" tools:replace="android:value" />
+        <meta-data android:name="com.oculus.intent.category.VR" android:value="vr_only" />
+        <meta-data android:name="com.oculus.vr.focusaware" android:value="true" tools:replace="android:value" />
+        <meta-data android:name="com.oculus.ossplash.background" android:value="passthrough-contextual" tools:replace="android:value" />
+        <meta-data android:name="com.oculus.handtracking.frequency" android:value="HIGH" />
+        <meta-data android:name="com.oculus.handtracking.version" android:value="V2.0" />
+
+        <activity
+            android:name="com.unity3d.player.UnityPlayerGameActivity"
+            android:theme="@style/BaseUnityGameActivityTheme"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|keyboardHidden|navigation|orientation|screenLayout|uiMode|screenSize|smallestScreenSize|fontScale|layoutDirection|density"
+            android:screenOrientation="landscape"
+            android:launchMode="singleTask"
+            android:resizeableActivity="false"
+            android:exported="true"
+            tools:replace="android:theme,android:resizeableActivity,android:screenOrientation">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="com.oculus.intent.category.VR" />
+            </intent-filter>
+            <meta-data android:name="unityplayer.UnityActivity" android:value="true" />
+            <meta-data android:name="com.oculus.vr.focusaware" android:value="true" tools:replace="android:value" />
+        </activity>
+    </application>
+</manifest>

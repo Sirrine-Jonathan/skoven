@@ -31,7 +31,7 @@ namespace Skoven.Settings
 
         public string HostAddress
         {
-            get => PlayerPrefs.GetString("fs.host.address", "192.168.1.100");
+            get => PlayerPrefs.GetString("fs.host.address", "127.0.0.1");
             set { PlayerPrefs.SetString("fs.host.address", value); PlayerPrefs.Save(); }
         }
 
@@ -136,7 +136,17 @@ namespace Skoven.Settings
                 foreach (var t in texts)
                 {
                     // Only override code/content text, not labels (which have fixed sizes)
-                    if (t.CompareTag("PanelContentText"))
+                    bool isContent = false;
+                    try
+                    {
+                        isContent = t.CompareTag("PanelContentText");
+                    }
+                    catch
+                    {
+                        isContent = false;
+                    }
+
+                    if (isContent)
                         t.fontSize = size;
 
                     if (DyslexiaFontEnabled && dyslexiaFont != null)

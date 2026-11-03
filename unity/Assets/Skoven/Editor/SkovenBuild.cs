@@ -1,126 +1,121 @@
+#if UNITY_EDITOR
 using System;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
+using Skoven.Editor;
 
 /// <summary>
-/// Skoven build automation — called by build-and-deploy.sh via Unity batchmode.
-///
-/// Usage (from build-and-deploy.sh):
-///   Unity -batchmode -executeMethod SkovenBuild.BuildDevelopmentApk
-///         -customBuildPath /path/to/Skoven-dev.apk
+/// Dedicated Meta Quest APK builder for Skoven.
+/// Programmatically generates the scene hierarchy if missing,
+/// configures PlayerSettings for Quest 3 (ARM64, Linear, API 29..32),
+/// and builds the installable Quest APK.
 /// </summary>
 public static class SkovenBuild
 {
-    private const string PackageName    = "com.sirrine.skoven";
-    private const string ProductName    = "Skoven";
-    private const string AppId          = "1122808136998612";
+    public const string PackageName    = "com.sirrine.skoven";
+    public const string ProductName    = "Skoven";
+    public const string AppId          = "1122808136998612";
+    public const string VersionString  = "0.1.0";
+    public const int VersionCode       = 1;
 
-    // All scenes to include in the build, in order.
-    // Update this list when scenes are added.
-    private static readonly string[] Scenes =
+    [MenuItem("Skoven/Build Meta Quest APK")]
+    public static void BuildAPK()
     {
-        "Assets/Skoven/Scenes/SkovenMain.unity",
-    };
+        string outputPath = GetArg("-customBuildPath") ?? "Builds/Skoven.apk";
+        BuildInternal(outputPath, buildAppBundle: false);
+    }
 
-    /// <summary>
-    /// Development APK — called by CI and the local build script.
-    /// Reads the output path from the -customBuildPath command-line argument.
-    /// </summary>
+    [MenuItem("Skoven/Build Development APK")]
     public static void BuildDevelopmentApk()
     {
-        string outputPath = GetArg("-customBuildPath") ?? "Builds/Skoven-dev.apk";
-        Build(outputPath, BuildOptions.Development | BuildOptions.AllowDebugging);
+        string outputPath = GetArg("-customBuildPath") ?? "Builds/Skoven-Dev.apk";
+        BuildInternal(outputPath, buildAppBundle: false, BuildOptions.Development | BuildOptions.AllowDebugging);
     }
 
-    /// <summary>
-    /// Release APK — for App Lab / Store submission.
-    /// Do not call this without a proper release keystore configured.
-    /// </summary>
-    public static void BuildReleaseApk()
+    [MenuItem("Skoven/Build Meta Quest AAB (Store Bundle)")]
+    public static void BuildAAB()
     {
-        string outputPath = GetArg("-customBuildPath") ?? "Builds/Skoven-release.apk";
-        Build(outputPath, BuildOptions.None);
+        string outputPath = GetArg("-customBuildPath") ?? "Builds/Skoven.aab";
+        BuildInternal(outputPath, buildAppBundle: true);
     }
 
-    // ── Internal ────────────────────────────────────────────────────────
-
-    private static void Build(string outputPath, BuildOptions options)
+    private static void BuildInternal(string outputPath, bool buildAppBundle, BuildOptions buildOptions = BuildOptions.None)
     {
-        Debug.Log($"[SkovenBuild] Starting build → {outputPath}");
+        outputPath = Path.GetFullPath(outputPath);
+        Debug.Log($"=== Starting Skoven Meta Quest Build (v{VersionString} code {VersionCode}, options: {buildOptions}) → {outputPath} ===");
 
-        ConfigurePlayerSettings();
+        // 1. Ensure OpenXR is configured and assemble fresh scene
+        SkovenProjectSetup.ConfigureOpenXR();
+        Debug.Log("[SkovenBuild] Rebuilding Skoven main scene to ensure latest XR & AR camera configuration...");
+        SkovenProjectSetup.BuildScene();
 
-        var scenes = GetScenePaths();
-        if (scenes.Length == 0)
+        // 2. Configure target
+        EditorUserBuildSettings.selectedBuildTargetGroup = BuildTargetGroup.Android;
+        EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.Android, BuildTarget.Android);
+        EditorUserBuildSettings.buildAppBundle = buildAppBundle;
+
+        // 3. Configure Player Settings for Quest 3
+        PlayerSettings.defaultInterfaceOrientation     = UIOrientation.LandscapeLeft;
+        PlayerSettings.companyName                     = "Sirrine-Jonathan";
+        PlayerSettings.productName                     = ProductName;
+        PlayerSettings.SetApplicationIdentifier(BuildTargetGroup.Android, PackageName);
+        PlayerSettings.bundleVersion                   = VersionString;
+        PlayerSettings.Android.bundleVersionCode       = VersionCode;
+
+        PlayerSettings.colorSpace                      = ColorSpace.Linear;
+        PlayerSettings.Android.minSdkVersion           = (AndroidSdkVersions)29;
+        PlayerSettings.Android.targetSdkVersion        = (AndroidSdkVersions)34;
+        PlayerSettings.Android.targetArchitectures     = AndroidArchitecture.ARM64;
+        PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
+        PlayerSettings.Android.forceInternetPermission = true;
+        PlayerSettings.Android.useCustomKeystore       = false;
+
+        Texture2D appIcon = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Skoven/Art/Store/app_icon_512x512.png");
+        if (appIcon != null)
         {
-            Debug.LogError("[SkovenBuild] No scenes found. Add scene paths to SkovenBuild.Scenes.");
-            EditorApplication.Exit(1);
-            return;
+            PlayerSettings.SetIcons(UnityEditor.Build.NamedBuildTarget.Android, new[] { appIcon }, IconKind.Any);
         }
 
-        var report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+        Debug.Log($"[SkovenBuild] App ID: {AppId} | Package: {PackageName}");
+
+        string parentDir = Path.GetDirectoryName(outputPath);
+        if (!string.IsNullOrEmpty(parentDir) && !Directory.Exists(parentDir))
         {
-            scenes           = scenes,
+            Directory.CreateDirectory(parentDir);
+        }
+
+        BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
+        {
+            scenes           = new[] { SkovenProjectSetup.ScenePath },
             locationPathName = outputPath,
             target           = BuildTarget.Android,
-            options          = options,
-        });
+            options          = buildOptions
+        };
 
-        var summary = report.summary;
-        Debug.Log($"[SkovenBuild] Result: {summary.result} | " +
-                  $"Size: {summary.totalSize / 1024 / 1024} MB | " +
-                  $"Errors: {summary.totalErrors} | " +
-                  $"Warnings: {summary.totalWarnings}");
+        Debug.Log($"[SkovenBuild] Invoking BuildPipeline.BuildPlayer...");
+        BuildReport report = BuildPipeline.BuildPlayer(buildPlayerOptions);
+        BuildSummary summary = report.summary;
 
         if (summary.result == BuildResult.Succeeded)
         {
-            Debug.Log($"[SkovenBuild] ✓ Build succeeded: {outputPath}");
-            EditorApplication.Exit(0);
+            float sizeMb = summary.totalSize / (1024f * 1024f);
+            Debug.Log($"=== SKOVEN BUILD SUCCEEDED: {outputPath} ({sizeMb:F2} MB) in {summary.totalTime.TotalSeconds:F1}s ===");
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(0);
+            }
         }
         else
         {
-            Debug.LogError($"[SkovenBuild] ✗ Build failed: {summary.result}");
-            EditorApplication.Exit(1);
+            Debug.LogError($"=== SKOVEN BUILD FAILED: {summary.totalErrors} errors ===");
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(1);
+            }
         }
-    }
-
-    private static void ConfigurePlayerSettings()
-    {
-        // Identity
-        PlayerSettings.companyName                        = "Sirrine-Jonathan";
-        PlayerSettings.productName                        = ProductName;
-        PlayerSettings.SetApplicationIdentifier(
-            BuildTargetGroup.Android, PackageName);
-
-        // Android / Quest settings
-        PlayerSettings.Android.minSdkVersion              = AndroidSdkVersions.AndroidApiLevel29;
-        PlayerSettings.Android.targetSdkVersion           = (AndroidSdkVersions)32;
-        PlayerSettings.Android.targetArchitectures        = AndroidArchitecture.ARM64;
-        PlayerSettings.SetScriptingBackend(
-            BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
-        PlayerSettings.Android.internetAccess             = InternetAccess.Require;
-
-        // OpenXR / Meta XR SDK — App ID must be in OculusSettings.asset
-        // (already set — this is a verification log only)
-        Debug.Log($"[SkovenBuild] App ID: {AppId} | Package: {PackageName}");
-    }
-
-    private static string[] GetScenePaths()
-    {
-        // Use the explicit list; fall back to all enabled scenes in Build Settings
-        var existing = Scenes
-            .Where(s => System.IO.File.Exists(s))
-            .ToArray();
-
-        if (existing.Length > 0) return existing;
-
-        // Fallback: whatever is enabled in Build Settings
-        return EditorBuildSettings.scenes
-            .Where(s => s.enabled)
-            .Select(s => s.path)
-            .ToArray();
     }
 
     private static string? GetArg(string name)
@@ -131,3 +126,4 @@ public static class SkovenBuild
         return null;
     }
 }
+#endif
