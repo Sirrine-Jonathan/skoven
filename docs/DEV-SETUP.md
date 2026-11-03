@@ -59,17 +59,27 @@ You should see:
 [Skoven] Connect your Quest to the same Wi-Fi network and use this machine's IP address.
 ```
 
-### 4. Find your machine's local IP
+### 4. Connect Quest to Companion
 
+There are two supported connection paths:
+
+#### Option A: USB Tethering (Recommended for Development)
+Zero network latency, no Wi-Fi guest isolation issues, and no firewall configuration required:
 ```bash
+adb -s 2G0YC1ZFCN01JN reverse tcp:8765 tcp:8765
+```
+The Quest app automatically connects to `ws://127.0.0.1:8765` over the USB cable.
+
+#### Option B: Wi-Fi (Untethered)
+```bash
+# Find your host machine's local IP:
 # macOS
 ipconfig getifaddr en0
 
 # Windows
 ipconfig | findstr "IPv4"
 ```
-
-Note this IP — you'll enter it in the Quest app's setup wizard (e.g., `192.168.1.42`).
+The Quest client automatically falls back to your host's local IP (e.g. `192.168.1.119:8765`) if `127.0.0.1` is unavailable.
 
 ### 5. Build for production
 
@@ -77,6 +87,26 @@ Note this IP — you'll enter it in the Quest app's setup wizard (e.g., `192.168
 npm run build
 npm start
 ```
+
+---
+
+## In-VR Controls & Interaction
+
+Skoven implements 6DOF controller tracking and laser pointer interaction aligned with the studio's `meta-quest-controller-input` skill:
+
+| Action | Control | Visual / Audio Feedback |
+|---|---|---|
+| **Speak to Orchestrator** | Hold **Right Controller Grip** | On-screen Talk button turns red with pulsing recording dot (`🔴 Listening...`); audio streams in real-time to Whisper |
+| **Talk Button (Click)** | Point laser ray at **[🎙️ Push to Talk]** & pull **Trigger** | Toggles voice capture with click chime and haptic pulse |
+| **Reposition Panels** | Point laser ray at any panel & hold **Left Controller Grip** | Grabs panel; move & rotate freely in 3D AR space; release to place (automatically saves layout to PlayerPrefs) |
+| **Click Buttons / Approvals** | Point laser ray at button & pull **Trigger** (or tap **A / X**) | Button scales up `1.035×` on hover (emerald beam); button presses with tactile haptic impulse (`0.85f`) and procedural click chime |
+| **Laser Beams** | Point with either hand | Left Pointer: Teal/Cyan (`#4ED4E0`); Right Pointer: Blue (`#4E80FF`); Hover: Emerald (`#4EC94E`) |
+
+### Connection Status Indicator
+
+The header on the central **Skoven Orchestrator** panel displays live connectivity:
+- `● Connected to Host` (Green): WebSocket connected to companion app; voice requests will process.
+- `○ Offline (Companion port 8765)` (Red): Companion server is not running or unreachable. If you attempt to speak while offline, an in-VR banner alerts you to run `npm start`.
 
 ---
 
