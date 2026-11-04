@@ -27,41 +27,62 @@ namespace Skoven.Voice
         private bool _gripWasPressed;
         private InputDevice _rightController;
 
+        private float _lastBindCheck;
+
         private void Start()
         {
-            // Try to find the right controller device
-            var devices = new System.Collections.Generic.List<InputDevice>();
-            InputDevices.GetDevicesWithCharacteristics(
-                InputDeviceCharacteristics.Right | InputDeviceCharacteristics.Controller,
-                devices
-            );
-            if (devices.Count > 0)
-                _rightController = devices[0];
-
+            TryBindRightController();
             InputDevices.deviceConnected += OnDeviceConnected;
+            InputDevices.deviceDisconnected += OnDeviceDisconnected;
         }
 
         private void OnDestroy()
         {
             InputDevices.deviceConnected -= OnDeviceConnected;
+            InputDevices.deviceDisconnected -= OnDeviceDisconnected;
         }
 
         private void OnDeviceConnected(InputDevice device)
         {
-            if ((device.characteristics & InputDeviceCharacteristics.Right) != 0 &&
-                (device.characteristics & InputDeviceCharacteristics.Controller) != 0)
+            TryBindRightController();
+        }
+
+        private void OnDeviceDisconnected(InputDevice device)
+        {
+            if (device == _rightController)
             {
-                _rightController = device;
+                _rightController = default;
+            }
+        }
+
+        private void TryBindRightController()
+        {
+            var devices = new System.Collections.Generic.List<InputDevice>();
+            InputDevices.GetDevicesWithCharacteristics(
+                InputDeviceCharacteristics.Right | InputDeviceCharacteristics.Controller,
+                devices
+            );
+            if (devices.Count > 0 && devices[0].isValid)
+            {
+                _rightController = devices[0];
+            }
+            else
+            {
+                _rightController = InputDevices.GetDeviceAtXRNode(XRNode.RightHand);
             }
         }
 
         private void Update()
         {
+            if (!_rightController.isValid && Time.unscaledTime - _lastBindCheck > 0.5f)
+            {
+                _lastBindCheck = Time.unscaledTime;
+                TryBindRightController();
+            }
+
             if (voiceMode != VoiceMode.PushToTalk) return;
 
-            bool gripPressed = false;
-            if (_rightController.isValid)
-                _rightController.TryGetFeatureValue(CommonUsages.gripButton, out gripPressed);
+            bool gripPressed = ReadRightGrip();
 
             if (gripPressed && !_gripWasPressed)
             {
@@ -73,6 +94,14 @@ namespace Skoven.Voice
             }
 
             _gripWasPressed = gripPressed;
+        }
+
+        private bool ReadRightGrip()
+        {
+            if (!_rightController.isValid) return false;
+            if (_rightController.TryGetFeatureValue(CommonUsages.gripButton, out bool btn) && btn) return true;
+            if (_rightController.TryGetFeatureValue(CommonUsages.grip, out float val) && val > 0.45f) return true;
+            return false;
         }
 
         // ── Hard stop (called from hand menu "Stop" button) ────────────────

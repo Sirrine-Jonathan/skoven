@@ -87,8 +87,19 @@ namespace Skoven.Agent
             _speaking = true;
 
 #if UNITY_ANDROID && !UNITY_EDITOR
-            _tts?.Call("speak", text, 0 /* QUEUE_FLUSH */, null, null);
-            // Reset _speaking after estimated duration (rough heuristic)
+            try
+            {
+                if (_tts != null)
+                {
+                    // Android TextToSpeech.speak(CharSequence, int, Bundle, String)
+                    // Call the 3-arg legacy signature speak(String, int, HashMap) with null params to avoid Bundle reflection mismatch
+                    _tts.Call<int>("speak", text, 0 /* QUEUE_FLUSH */, (AndroidJavaObject)null);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[TTS] Android TTS speak failed (Quest might not have Google TTS engine installed): {ex.Message}");
+            }
             Invoke(nameof(OnSpeechComplete), EstimateDuration(text));
 #else
             // Editor fallback: log to console
@@ -105,9 +116,17 @@ namespace Skoven.Agent
 #if UNITY_ANDROID && !UNITY_EDITOR
         private void InitAndroidTts()
         {
-            using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
-            var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
-            _tts = new AndroidJavaObject("android.speech.tts.TextToSpeech", activity, null);
+            try
+            {
+                using var unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
+                var activity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                _tts = new AndroidJavaObject("android.speech.tts.TextToSpeech", activity, null);
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[TTS] Failed to initialize Android TextToSpeech: {ex.Message}");
+                _tts = null;
+            }
         }
 #endif
     }

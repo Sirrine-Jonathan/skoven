@@ -367,7 +367,7 @@ namespace Skoven.Editor
             panel.chatTextMesh = CreateTMP(root.transform, "ChatText", "Ready. Speak your request or connect companion.", 19, new Vector2(740, 300), new Vector2(0, 25), s_InterRegular, isContentText: true);
 
             // Talk Button
-            Button talkBtn = CreateButton(root.transform, "TalkButton", "🎙️ <b>Push to Talk</b> (or Hold Right Grip)", new Vector2(480, 56), new Vector2(0, -185), new Color(0.18f, 0.52f, 0.88f, 0.95f), out panel.talkButtonText, out panel.talkButtonImage);
+            Button talkBtn = CreateButton(root.transform, "TalkButton", "<b>Push to Talk</b> (or Hold Right Grip)", new Vector2(480, 56), new Vector2(0, -185), new Color(0.18f, 0.52f, 0.88f, 0.95f), out panel.talkButtonText, out panel.talkButtonImage);
             panel.talkButton = talkBtn;
 
             // Approval Bar (hidden by default)
@@ -380,8 +380,8 @@ namespace Skoven.Editor
             appRect.anchoredPosition = new Vector2(0, -245);
 
             panel.approvalPromptText = CreateTMP(approvalBar.transform, "PromptText", "Approve proposed action?", 18, new Vector2(360, 40), new Vector2(-170, 0), s_InterBold);
-            panel.approveButton = CreateButton(approvalBar.transform, "ApproveBtn", "✓ Approve", new Vector2(160, 46), new Vector2(100, 0), new Color(0.2f, 0.75f, 0.35f, 0.95f), out _, out _);
-            panel.rejectButton = CreateButton(approvalBar.transform, "RejectBtn", "✗ Reject", new Vector2(160, 46), new Vector2(275, 0), new Color(0.85f, 0.25f, 0.25f, 0.95f), out _, out _);
+            panel.approveButton = CreateButton(approvalBar.transform, "ApproveBtn", "Approve", new Vector2(160, 46), new Vector2(100, 0), new Color(0.2f, 0.75f, 0.35f, 0.95f), out _, out _);
+            panel.rejectButton = CreateButton(approvalBar.transform, "RejectBtn", "Reject", new Vector2(160, 46), new Vector2(275, 0), new Color(0.85f, 0.25f, 0.25f, 0.95f), out _, out _);
 
             approvalBar.SetActive(false);
             panel.approvalBar = approvalBar;
@@ -391,8 +391,8 @@ namespace Skoven.Editor
 
         private static DiffPanel CreateDiffPanel(Transform parent, Camera worldCam)
         {
-            // Angled inward at -25° yaw to face the user
-            GameObject root = CreatePanelRoot<DiffPanel>(parent, "DiffPanel", new Vector3(-1.15f, 0f, 1.3f), new Vector2(900, 600), FloatingPanel.PanelId.Diff, worldCam, new Vector3(0f, -25f, 0f));
+            // Angled inward at +28° yaw to face the user at center
+            GameObject root = CreatePanelRoot<DiffPanel>(parent, "DiffPanel", new Vector3(-1.15f, 0f, 1.3f), new Vector2(900, 600), FloatingPanel.PanelId.Diff, worldCam, new Vector3(0f, 28f, 0f));
             DiffPanel panel = root.GetComponent<DiffPanel>();
 
             panel.summaryTextMesh = CreateTMP(root.transform, "SummaryText", "Diff Viewer - No active diffs", 20, new Vector2(840, 40), new Vector2(0, 250), s_InterBold);
@@ -415,8 +415,8 @@ namespace Skoven.Editor
 
         private static AgentLogPanel CreateAgentLogPanel(Transform parent, Camera worldCam)
         {
-            // Angled inward at +25° yaw to face the user
-            GameObject root = CreatePanelRoot<AgentLogPanel>(parent, "AgentLogPanel", new Vector3(1.15f, 0f, 1.3f), new Vector2(800, 550), FloatingPanel.PanelId.AgentLog, worldCam, new Vector3(0f, 25f, 0f));
+            // Angled inward at -28° yaw to face the user at center
+            GameObject root = CreatePanelRoot<AgentLogPanel>(parent, "AgentLogPanel", new Vector3(1.15f, 0f, 1.3f), new Vector2(800, 550), FloatingPanel.PanelId.AgentLog, worldCam, new Vector3(0f, -28f, 0f));
             AgentLogPanel panel = root.GetComponent<AgentLogPanel>();
 
             panel.logTextMesh = CreateTMP(root.transform, "LogText", "Agent Log - Waiting for activity...", 18, new Vector2(740, 480), new Vector2(0, 0), s_JetBrainsMono, isContentText: true);

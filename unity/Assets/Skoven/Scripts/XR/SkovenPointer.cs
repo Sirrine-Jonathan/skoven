@@ -24,9 +24,12 @@ namespace Skoven.XR
 
         [Header("Hand Setup")]
         public HandType hand = HandType.Right;
-        public float pointerPitchOffset = -20.0f; // Emitter nozzle pitch relative to controller grip
+        public float pointerPitchOffset = -25.0f; // Calibrated parallel to faceplate plane (-25 deg)
         public float maxRayDistance = 8.0f;
         public LayerMask raycastMask = ~0;
+
+        [Header("Tracking Calibration")]
+        public Vector3 rotationOffset = new Vector3(88f, 0f, 0f); // Calibrated OpenXR Grip Pose (+88 deg)
 
         [Header("Visual Components")]
         public LineRenderer lineRenderer;
@@ -234,7 +237,8 @@ namespace Skoven.XR
 
             if (_xrDevice.TryGetFeatureValue(CommonUsages.deviceRotation, out Quaternion devRot))
             {
-                transform.localRotation = devRot;
+                // +88 degrees pitch aligns OpenXR grip coordinate frame with physical controller barrel
+                transform.localRotation = devRot * Quaternion.Euler(rotationOffset);
             }
         }
 
@@ -248,8 +252,10 @@ namespace Skoven.XR
                 return;
             }
 
-            Vector3 rayOrigin = transform.position;
-            Vector3 rayDir = transform.rotation * Quaternion.Euler(pointerPitchOffset, 0f, 0f) * Vector3.forward;
+            // Ray shoots from the faceplate front rim parallel to top surface
+            Quaternion faceRot = transform.rotation * Quaternion.Euler(pointerPitchOffset, 0f, 0f);
+            Vector3 rayOrigin = transform.position + faceRot * new Vector3(0f, 0.004f, 0.031f);
+            Vector3 rayDir = faceRot * Vector3.forward;
 
             // Handle active panel dragging
             bool gripPressed = ReadGripPressed();
@@ -424,7 +430,7 @@ namespace Skoven.XR
         private static AudioClip GetClickClip()
         {
             if (s_CachedClickClip != null) return s_CachedClickClip;
-            int sampleRate = 22050;
+            int sampleRate = 48000;
             int clickSamples = (int)(sampleRate * 0.035f);
             float[] clickData = new float[clickSamples];
             for (int i = 0; i < clickSamples; i++)

@@ -12,22 +12,69 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { execFile } from "child_process";
+import { promisify } from "util";
 import OpenAI from "openai";
 
-export type STTBackend = "openai_whisper" | "passthrough";
+const execFileAsync = promisify(execFile);
+
+export type STTBackend = "openai_whisper" | "local_whisper" | "passthrough" | "auto";
 
 export class SpeechToText {
   private readonly backend: STTBackend;
   private readonly openai: OpenAI | null;
+  private readonly localWhisperBin: string | null;
+  private readonly localWhisperModel: string | null;
 
   constructor() {
-    this.backend = (process.env["SKOVEN_STT_BACKEND"] ??
-      "openai_whisper") as STTBackend;
+    const configured = (process.env["SKOVEN_STT_BACKEND"] ?? "auto") as STTBackend;
 
+    // Check OpenAI availability
     this.openai =
-      this.backend === "openai_whisper" && process.env["OPENAI_API_KEY"]
+      process.env["OPENAI_API_KEY"]
         ? new OpenAI({ apiKey: process.env["OPENAI_API_KEY"] })
         : null;
+
+    // Check local whisper-cli availability
+    const customBin = process.env["WHISPER_CPP_BIN"];
+    const standardBin = "/opt/homebrew/bin/whisper-cli";
+    if (customBin && fs.existsSync(customBin)) {
+      this.localWhisperBin = customBin;
+    } else if (fs.existsSync(standardBin)) {
+      this.localWhisperBin = standardBin;
+    } else {
+      this.localWhisperBin = null;
+    }
+
+    const defaultModel = path.join(
+      os.homedir(),
+      ".cache",
+      "whisper.cpp",
+      "ggml-base.en.bin"
+    );
+    const customModel = process.env["WHISPER_CPP_MODEL"];
+    if (customModel && fs.existsSync(customModel)) {
+      this.localWhisperModel = customModel;
+    } else if (fs.existsSync(defaultModel)) {
+      this.localWhisperModel = defaultModel;
+    } else {
+      this.localWhisperModel = null;
+    }
+
+    if (configured === "auto") {
+      if (this.openai) {
+        this.backend = "openai_whisper";
+        console.log("[STT] Auto-selected backend: openai_whisper");
+      } else if (this.localWhisperBin && this.localWhisperModel) {
+        this.backend = "local_whisper";
+        console.log(`[STT] Auto-selected backend: local_whisper (${this.localWhisperBin})`);
+      } else {
+        this.backend = "openai_whisper"; // will fail with descriptive error if called
+        console.warn("[STT] Neither OPENAI_API_KEY nor whisper-cli model found.");
+      }
+    } else {
+      this.backend = configured;
+    }
   }
 
   /**
@@ -38,13 +85,20 @@ export class SpeechToText {
    */
   async transcribe(pcmBuffer: Buffer): Promise<string> {
     if (this.backend === "passthrough") {
-      // In passthrough mode the Quest sends QuestTranscript directly;
-      // this path should never be called, but guard defensively.
+      // In passthrough mode the Quest sends QuestTranscript directly
       return "";
     }
 
     if (this.backend === "openai_whisper") {
+      if (!this.openai && this.localWhisperBin && this.localWhisperModel) {
+        console.log("[STT] OPENAI_API_KEY missing, falling back to local_whisper");
+        return this.transcribeWithLocalWhisper(pcmBuffer);
+      }
       return this.transcribeWithWhisper(pcmBuffer);
+    }
+
+    if (this.backend === "local_whisper") {
+      return this.transcribeWithLocalWhisper(pcmBuffer);
     }
 
     throw new Error(`Unknown STT backend: ${this.backend}`);
@@ -53,7 +107,7 @@ export class SpeechToText {
   private async transcribeWithWhisper(pcmBuffer: Buffer): Promise<string> {
     if (!this.openai) {
       throw new Error(
-        "OpenAI client not initialized. Check OPENAI_API_KEY in .env"
+        "OpenAI client not initialized. Check OPENAI_API_KEY in .env or switch to SKOVEN_STT_BACKEND=local_whisper"
       );
     }
 
@@ -73,7 +127,52 @@ export class SpeechToText {
 
       return (response as unknown as string).trim();
     } finally {
-      fs.unlinkSync(tmpPath);
+      if (fs.existsSync(tmpPath)) {
+        fs.unlinkSync(tmpPath);
+      }
+    }
+  }
+
+  private async transcribeWithLocalWhisper(pcmBuffer: Buffer): Promise<string> {
+    const bin = this.localWhisperBin ?? "/opt/homebrew/bin/whisper-cli";
+    const model =
+      this.localWhisperModel ??
+      path.join(os.homedir(), ".cache", "whisper.cpp", "ggml-base.en.bin");
+
+    if (!fs.existsSync(bin)) {
+      throw new Error(`whisper-cli binary not found at ${bin}. Run 'brew install whisper-cpp'.`);
+    }
+    if (!fs.existsSync(model)) {
+      throw new Error(
+        `whisper GGML model not found at ${model}. Download ggml-base.en.bin to ~/.cache/whisper.cpp/`
+      );
+    }
+
+    const wavBuffer = pcmToWav(pcmBuffer, 16000, 1, 16);
+    const tmpPath = path.join(os.tmpdir(), `skoven-stt-${Date.now()}.wav`);
+
+    try {
+      fs.writeFileSync(tmpPath, wavBuffer);
+      // Run whisper-cli with no timestamps (-nt) and no progress prints (-np)
+      const { stdout } = await execFileAsync(bin, [
+        "-m",
+        model,
+        "-nt",
+        "-np",
+        "-f",
+        tmpPath,
+      ]);
+
+      const result = stdout.trim();
+      console.log(`[STT] Local whisper transcribed: "${result}"`);
+      return result;
+    } catch (err) {
+      console.error("[STT] Local whisper transcription failed:", err);
+      return "";
+    } finally {
+      if (fs.existsSync(tmpPath)) {
+        fs.unlinkSync(tmpPath);
+      }
     }
   }
 }

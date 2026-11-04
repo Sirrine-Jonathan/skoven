@@ -183,8 +183,8 @@ namespace Skoven.UI.Panels
             if (talkButtonText != null)
             {
                 talkButtonText.text = active
-                    ? "🔴 <b>Listening...</b> (Release Grip or Click to Stop)"
-                    : "🎙️ <b>Push to Talk</b> (or Hold Right Grip)";
+                    ? "<b>Listening...</b> (Release Grip or Click to Stop)"
+                    : "<b>Push to Talk</b> (or Hold Right Grip)";
             }
 
             if (talkButtonImage != null)

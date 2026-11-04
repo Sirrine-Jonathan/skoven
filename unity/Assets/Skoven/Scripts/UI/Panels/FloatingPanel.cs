@@ -87,10 +87,10 @@ namespace Skoven.UI.Panels
 
         // ── Layout persistence ─────────────────────────────────────────────
 
-        private string PositionKey => $"skoven.panel.v2.{panelId}.pos";
-        private string RotationKey => $"skoven.panel.v2.{panelId}.rot";
-        private string ScaleKey    => $"skoven.panel.v2.{panelId}.scale";
-        private string VisibleKey  => $"skoven.panel.v2.{panelId}.visible";
+        private string PositionKey => $"skoven.panel.v3.{panelId}.pos";
+        private string RotationKey => $"skoven.panel.v3.{panelId}.rot";
+        private string ScaleKey    => $"skoven.panel.v3.{panelId}.scale";
+        private string VisibleKey  => $"skoven.panel.v3.{panelId}.visible";
 
         public void SaveLayout()
         {

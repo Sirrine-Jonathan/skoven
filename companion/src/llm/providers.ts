@@ -70,7 +70,7 @@ export const PROVIDERS: Record<ProviderID, ProviderConfig> = {
     // baseUrl overrideable via OLLAMA_BASE_URL
     baseUrl: "http://localhost:11434/v1",
     apiKeyEnvVar: null,
-    defaultModel: "llama3.1:8b",
+    defaultModel: "qwen2.5-coder:7b",
     supportsStreaming: true,
     openAICompatible: true, // Ollama exposes an OpenAI-compatible /v1 endpoint
     modelListUrl: "http://localhost:11434/api/tags",
